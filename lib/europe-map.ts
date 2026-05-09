@@ -151,7 +151,7 @@ function focusFromPoints(points: [number, number][]) {
   const maxY = Math.max(...ys);
   const width = Math.max(maxX - minX, 42);
   const height = Math.max(maxY - minY, 42);
-  const scale = Math.min(3.7, Math.max(1.86, 660 / Math.max(width, height)));
+  const scale = Math.min(12, Math.max(4, 1800 / Math.max(width, height)));
 
   return {
     x: (minX + maxX) / 2,

@@ -174,93 +174,95 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                   </button>
                 </div>
 
-                <div className="relative z-[1] mt-5 grid gap-5">
-                  <div className="relative min-h-[480px] overflow-hidden rounded-[22px] border border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.34)] sm:min-h-[600px]">
-                    <svg
-                      viewBox={`0 0 ${viewBox.w} ${viewBox.h}`}
-                      className="absolute inset-0 h-full w-full"
-                      preserveAspectRatio="xMidYMid meet"
-                      aria-hidden
-                    >
-                      <motion.g
-                        animate={{
-                          x: viewBox.w / 2 - (activeEvent?.focus.x ?? viewBox.w / 2),
-                          y: viewBox.h / 2 - (activeEvent?.focus.y ?? viewBox.h / 2),
-                          scale: activeEvent?.focus.scale ?? 2.2,
-                        }}
-                        transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-                        style={{ transformOrigin: `${activeEvent?.focus.x ?? viewBox.w / 2}px ${activeEvent?.focus.y ?? viewBox.h / 2}px` }}
-                      >
-                        {countries.map((country) => (
-                          <path
-                            key={country.id}
-                            d={country.d}
-                            fill={country.isLU ? "rgba(166,255,203,0.22)" : "rgba(var(--rgb-fg),0.11)"}
-                            stroke={country.isLU ? "rgba(166,255,203,0.7)" : "rgba(var(--rgb-fg),0.28)"}
-                            strokeWidth={country.isLU ? 3 : 1.6}
-                            vectorEffect="non-scaling-stroke"
-                          />
-                        ))}
-                        {events.map((event, i) => {
-                          const city = cities.find((item) => item.key === event.target);
-                          if (!city) return null;
-                          const selected = event.id === activeEvent?.id;
-                          return (
-                            <g key={event.id}>
-                              <motion.circle
-                                cx={city.x}
-                                cy={city.y}
-                                r={selected ? 18 : 10}
-                                fill={EVENT_COLORS[i % EVENT_COLORS.length]}
-                                opacity={selected ? 0.25 : 0.1}
-                                animate={selected ? { scale: [0.8, 1.4, 0.8] } : { scale: 1 }}
-                                transition={{ duration: 2.4, repeat: selected ? Infinity : 0, ease: "easeInOut" }}
-                                style={{ transformOrigin: `${city.x}px ${city.y}px` }}
-                              />
-                              <circle
-                                cx={city.x}
-                                cy={city.y}
-                                r={selected ? 8 : 5}
-                                fill={EVENT_COLORS[i % EVENT_COLORS.length]}
-                                stroke="rgba(var(--rgb-bg),0.95)"
-                                strokeWidth="2"
-                                vectorEffect="non-scaling-stroke"
-                              />
-                              {selected && (
-                                <text
-                                  x={city.x}
-                                  y={city.y - 24}
-                                  textAnchor="middle"
-                                  fill="var(--color-bone)"
-                                  fontSize="11"
-                                  fontWeight="600"
-                                  fontFamily="var(--font-geist-sans), system-ui, sans-serif"
-                                  letterSpacing="0.04em"
-                                >
-                                  {event.name}
-                                </text>
-                              )}
-                            </g>
-                          );
-                        })}
-                        {/* Route line for active event */}
-                        {activeEvent?.d && (
-                          <motion.path
-                            key={activeEvent.id + "-route"}
-                            d={activeEvent.d}
-                            fill="none"
-                            stroke={activeColor}
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeDasharray="6 4"
-                            vectorEffect="non-scaling-stroke"
-                            initial={{ pathLength: 0, opacity: 0 }}
-                            animate={{ pathLength: 1, opacity: 0.7 }}
-                            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                          />
-                        )}
-                      </motion.g>
-                    </svg>
+                <div className="relative z-[1] mt-5 grid gap-5 lg:grid-cols-[1fr_0.78fr] lg:items-end">
+                  <div className="relative min-h-[300px] overflow-hidden rounded-[22px] border border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.34)] sm:min-h-[420px]">
+                    {(() => {
+                      const fx = activeEvent?.focus.x ?? viewBox.w / 2;
+                      const fy = activeEvent?.focus.y ?? viewBox.h / 2;
+                      const sc = activeEvent?.focus.scale ?? 4;
+                      const vbW = viewBox.w / sc;
+                      const vbH = viewBox.h / sc;
+                      const vbX = fx - vbW / 2;
+                      const vbY = fy - vbH / 2;
+                      return (
+                        <svg
+                          viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
+                          className="absolute inset-0 h-full w-full"
+                          preserveAspectRatio="xMidYMid meet"
+                          aria-hidden
+                          style={{ transition: "all 0.85s cubic-bezier(0.16, 1, 0.3, 1)" }}
+                        >
+                          {countries.map((country) => (
+                            <path
+                              key={country.id}
+                              d={country.d}
+                              fill={country.isLU ? "rgba(166,255,203,0.22)" : "rgba(var(--rgb-fg),0.11)"}
+                              stroke={country.isLU ? "rgba(166,255,203,0.7)" : "rgba(var(--rgb-fg),0.28)"}
+                              strokeWidth={country.isLU ? 3 : 1.6}
+                              vectorEffect="non-scaling-stroke"
+                            />
+                          ))}
+                          {events.map((event, i) => {
+                            const city = cities.find((item) => item.key === event.target);
+                            if (!city) return null;
+                            const selected = event.id === activeEvent?.id;
+                            return (
+                              <g key={event.id}>
+                                <motion.circle
+                                  cx={city.x}
+                                  cy={city.y}
+                                  r={selected ? 18 : 10}
+                                  fill={EVENT_COLORS[i % EVENT_COLORS.length]}
+                                  opacity={selected ? 0.25 : 0.1}
+                                  animate={selected ? { scale: [0.8, 1.4, 0.8] } : { scale: 1 }}
+                                  transition={{ duration: 2.4, repeat: selected ? Infinity : 0, ease: "easeInOut" }}
+                                  style={{ transformOrigin: `${city.x}px ${city.y}px` }}
+                                />
+                                <circle
+                                  cx={city.x}
+                                  cy={city.y}
+                                  r={selected ? 8 : 5}
+                                  fill={EVENT_COLORS[i % EVENT_COLORS.length]}
+                                  stroke="rgba(var(--rgb-bg),0.95)"
+                                  strokeWidth="2"
+                                  vectorEffect="non-scaling-stroke"
+                                />
+                                {selected && (
+                                  <text
+                                    x={city.x}
+                                    y={city.y - 24}
+                                    textAnchor="middle"
+                                    fill="var(--color-bone)"
+                                    fontSize="11"
+                                    fontWeight="600"
+                                    fontFamily="var(--font-geist-sans), system-ui, sans-serif"
+                                    letterSpacing="0.04em"
+                                  >
+                                    {event.name}
+                                  </text>
+                                )}
+                              </g>
+                            );
+                          })}
+                          {/* Route line for active event */}
+                          {activeEvent?.d && (
+                            <motion.path
+                              key={activeEvent.id + "-route"}
+                              d={activeEvent.d}
+                              fill="none"
+                              stroke={activeColor}
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeDasharray="6 4"
+                              vectorEffect="non-scaling-stroke"
+                              initial={{ pathLength: 0, opacity: 0 }}
+                              animate={{ pathLength: 1, opacity: 0.7 }}
+                              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                            />
+                          )}
+                        </svg>
+                      );
+                    })()}
                     <motion.div
                       key={activeEvent?.id}
                       className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] rounded-full border border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-bg),0.72)] px-4 py-2 text-[12px] font-medium text-[var(--color-bone)] backdrop-blur-xl"
@@ -272,28 +274,24 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                     </motion.div>
                   </div>
 
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <div className="rounded-[22px] border border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.42)] p-5">
-                      <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--color-silver-dim)]">
-                        Evenement selectionne
-                      </p>
-                      <h3 className="mt-3 text-2xl font-medium leading-tight text-[var(--color-bone)]">
-                        {activeEvent?.name}
-                      </h3>
-                      <p className="mt-3 text-sm leading-6 text-[var(--color-silver)]">
-                        Un point de rendez-vous, une destination, et une demande d'inscription qui partira bientot via
-                        EmailJS.
-                      </p>
-                    </div>
-                    <div className="flex items-end rounded-[22px] border border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.42)] p-5">
-                      <button
-                        type="button"
-                        onClick={openForm}
-                        className="press inline-flex h-11 w-full items-center justify-center rounded-full bg-[var(--color-bone)] px-5 text-[13px] font-medium text-[var(--color-ink)]"
-                      >
-                        Ouvrir le formulaire
-                      </button>
-                    </div>
+                  <div className="rounded-[22px] border border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.42)] p-5">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--color-silver-dim)]">
+                      Evenement selectionne
+                    </p>
+                    <h3 className="mt-3 text-2xl font-medium leading-tight text-[var(--color-bone)]">
+                      {activeEvent?.name}
+                    </h3>
+                    <p className="mt-3 text-sm leading-6 text-[var(--color-silver)]">
+                      Un point de rendez-vous, une destination, et une demande d'inscription qui partira bientot via
+                      EmailJS.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={openForm}
+                      className="press mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-[var(--color-bone)] px-5 text-[13px] font-medium text-[var(--color-ink)]"
+                    >
+                      Ouvrir le formulaire
+                    </button>
                   </div>
                 </div>
               </div>

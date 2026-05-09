@@ -92,13 +92,146 @@ export const experiences = [
 ] as const;
 
 export const gallery = [
-  { id: "g1", label: "Luxembourg Drive", ratio: "4 / 5", aspect: 4 / 5, image: { src: "/images/gallery-luxembourg-drive.jpg", alt: "Placeholder photo Luxembourg Drive" } },
-  { id: "g2", label: "Cars & Coffee", ratio: "16 / 9", aspect: 16 / 9, image: { src: "/images/gallery-cars-coffee.jpg", alt: "Placeholder photo Cars and Coffee" } },
-  { id: "g3", label: "Castle Roads", ratio: "1 / 1", aspect: 1, image: { src: "/images/gallery-castle-roads.jpg", alt: "Placeholder photo Castle Roads" } },
-  { id: "g4", label: "Members Night", ratio: "3 / 4", aspect: 3 / 4, image: { src: "/images/gallery-members-night.jpg", alt: "Placeholder photo Members Night" } },
-  { id: "g5", label: "Moselle Line", ratio: "16 / 9", aspect: 16 / 9, image: { src: "/images/gallery-moselle-line.jpg", alt: "Placeholder photo Moselle Line" } },
-  { id: "g6", label: "Private Run", ratio: "4 / 5", aspect: 4 / 5, image: { src: "/images/gallery-private-run.jpg", alt: "Placeholder photo Private Run" } },
+  {
+    id: "g1",
+    slug: "luxembourg-drive",
+    label: "Luxembourg Drive",
+    ratio: "4 / 5",
+    aspect: 4 / 5,
+    date: "Saison 2026",
+    location: "Luxembourg",
+    description:
+      "Une sortie signature entre routes vallonnees, pauses soignees et voitures reunies dans le meme tempo.",
+    image: { src: "/images/gallery-luxembourg-drive.jpg", alt: "Photo Luxembourg Drive" },
+    photos: [
+      "/images/moments/luxembourg-drive-01.jpg",
+      "/images/moments/luxembourg-drive-02.jpg",
+      "/images/moments/luxembourg-drive-03.jpg",
+    ],
+  },
+  {
+    id: "g2",
+    slug: "cars-coffee",
+    label: "Cars & Coffee",
+    ratio: "16 / 9",
+    aspect: 16 / 9,
+    date: "Dimanche matin",
+    location: "Luxembourg",
+    description:
+      "Cafe, metal et conversations simples autour des voitures qui donnent envie de prolonger la route.",
+    image: { src: "/images/gallery-cars-coffee.jpg", alt: "Photo Cars and Coffee" },
+    photos: [
+      "/images/moments/cars-coffee-01.jpg",
+      "/images/moments/cars-coffee-02.jpg",
+      "/images/moments/cars-coffee-03.jpg",
+    ],
+  },
+  {
+    id: "g3",
+    slug: "castle-roads",
+    label: "Castle Roads",
+    ratio: "1 / 1",
+    aspect: 1,
+    date: "Route privee",
+    location: "Chateaux du Luxembourg",
+    description:
+      "Des lignes de campagne, des silhouettes historiques et une selection de voitures faites pour rouler ensemble.",
+    image: { src: "/images/gallery-castle-roads.jpg", alt: "Photo Castle Roads" },
+    photos: [
+      "/images/moments/castle-roads-01.jpg",
+      "/images/moments/castle-roads-02.jpg",
+      "/images/moments/castle-roads-03.jpg",
+    ],
+  },
+  {
+    id: "g4",
+    slug: "members-night",
+    label: "Members Night",
+    ratio: "3 / 4",
+    aspect: 3 / 4,
+    date: "Soiree membres",
+    location: "Luxembourg",
+    description:
+      "Une nuit plus intime, pensee pour les membres, avec une lumiere basse et une atmosphere de club.",
+    image: { src: "/images/gallery-members-night.jpg", alt: "Photo Members Night" },
+    photos: [
+      "/images/moments/members-night-01.jpg",
+      "/images/moments/members-night-02.jpg",
+      "/images/moments/members-night-03.jpg",
+    ],
+  },
+  {
+    id: "g5",
+    slug: "moselle-line",
+    label: "Moselle Line",
+    ratio: "16 / 9",
+    aspect: 16 / 9,
+    date: "Road session",
+    location: "Moselle",
+    description:
+      "Un itineraire fluide entre reflets, virages propres et arrets choisis le long de la Moselle.",
+    image: { src: "/images/gallery-moselle-line.jpg", alt: "Photo Moselle Line" },
+    photos: [
+      "/images/moments/moselle-line-01.jpg",
+      "/images/moments/moselle-line-02.jpg",
+      "/images/moments/moselle-line-03.jpg",
+    ],
+  },
+  {
+    id: "g6",
+    slug: "private-run",
+    label: "Private Run",
+    ratio: "4 / 5",
+    aspect: 4 / 5,
+    date: "Sur invitation",
+    location: "Destination secrete",
+    description:
+      "Une sortie plus confidentielle, construite autour du plaisir de rouler sans bruit inutile.",
+    image: { src: "/images/gallery-private-run.jpg", alt: "Photo Private Run" },
+    photos: [
+      "/images/moments/private-run-01.jpg",
+      "/images/moments/private-run-02.jpg",
+      "/images/moments/private-run-03.jpg",
+    ],
+  },
 ] as const;
+
+export const shop = {
+  eyebrow: "Boutique",
+  title: "Objets de club.",
+  body:
+    "Une selection courte, pensee comme des pieces de saison : coupes nettes, matieres sobres, details Drive x Friends.",
+  cta: "Demander une precommande",
+  products: [
+    {
+      id: "club-tee",
+      name: "Club Tee",
+      status: "Precommande",
+      price: "49 EUR",
+      description: "T-shirt epais coupe droite, marquage discret poitrine et signature dos.",
+      sizes: ["S", "M", "L", "XL"],
+      images: ["/images/shop/club-tee-01.jpg", "/images/shop/club-tee-02.jpg"],
+    },
+    {
+      id: "route-cap",
+      name: "Route Cap",
+      status: "Edition limitee",
+      price: "39 EUR",
+      description: "Casquette noire brodee, pensee pour les departs tot et les retours tard.",
+      sizes: ["One size"],
+      images: ["/images/shop/route-cap-01.jpg", "/images/shop/route-cap-02.jpg"],
+    },
+    {
+      id: "garage-hoodie",
+      name: "Garage Hoodie",
+      status: "A venir",
+      price: "89 EUR",
+      description: "Hoodie lourd avec capuche structuree, pour garder l'esprit paddock hors saison.",
+      sizes: ["S", "M", "L", "XL"],
+      images: ["/images/shop/garage-hoodie-01.jpg", "/images/shop/garage-hoodie-02.jpg"],
+    },
+  ],
+} as const;
 
 export const invitation = {
   eyebrow: "Adhésion",

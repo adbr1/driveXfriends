@@ -26,7 +26,7 @@ export function MagneticButton({
 
   const styles = cn(
     "group relative inline-flex items-center justify-center select-none whitespace-nowrap rounded-full overflow-hidden",
-    "px-7 py-3.5 text-[13px] font-medium tracking-[0.01em]",
+    "h-12 px-6 text-[13px] font-medium tracking-[0.01em] sm:h-auto sm:px-7 sm:py-3.5",
     "transition-[box-shadow,background-color,color,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
     "will-change-transform active:scale-[0.97]",
     variant === "primary"

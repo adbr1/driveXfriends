@@ -180,34 +180,6 @@ export function ChapterPrologue() {
           }
           transition={{ duration: 0.55, delay: 1.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1] }}
         >
-          {/* Radial perspective burst — only intro */}
-          <AnimatePresence>
-            {intro && !isTouch && !reduced ? (
-              <motion.div
-                key="radial"
-                aria-hidden
-                className="absolute inset-0"
-                exit={{ opacity: 0, scale: 1.08, transition: { duration: 0.95, ease: [0.16, 1, 0.3, 1] } }}
-              >
-                <RadialBurst />
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-
-          {/* Speed streaks */}
-          <AnimatePresence>
-            {intro && !isTouch && !reduced ? (
-              <motion.div
-                key="streaks"
-                aria-hidden
-                className="absolute inset-0"
-                exit={{ opacity: 0, filter: "blur(10px)", transition: { duration: 0.7 } }}
-              >
-                <SpeedStreaks />
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-
           {/* White flash */}
           <AnimatePresence>
             {intro ? (
@@ -222,31 +194,6 @@ export function ChapterPrologue() {
                   duration: isTouch ? 0.62 : 1.3,
                   times: isTouch ? [0, 0.45, 1] : [0, 0.7, 0.82, 0.9, 1],
                   ease: "easeOut",
-                }}
-              />
-            ) : null}
-          </AnimatePresence>
-
-          {/* Center horizontal hairline that emerges with the title and lingers */}
-          <AnimatePresence>
-            {intro && !isTouch && !reduced ? (
-              <motion.div
-                key="centerline"
-                aria-hidden
-                className="absolute left-0 right-0 h-[1px] origin-center"
-                style={{
-                  top: "calc(50% + 7vh)",
-                  background:
-                    "linear-gradient(90deg, transparent, rgba(var(--rgb-fg),0.85) 50%, transparent)",
-                  filter: "blur(0.4px)",
-                  boxShadow: "0 0 28px rgba(var(--rgb-fg),0.5)",
-                }}
-                initial={{ scaleX: 0, opacity: 0 }}
-                animate={{ scaleX: 1, opacity: 1 }}
-                exit={{ scaleX: 0, opacity: 0, transition: { duration: 0.8, ease: [0.65, 0, 0.05, 1] } }}
-                transition={{
-                  scaleX: { delay: TITLE_START + 0.05, duration: 0.65, ease: [0.16, 1, 0.3, 1] },
-                  opacity: { delay: TITLE_START + 0.05, duration: 0.3 },
                 }}
               />
             ) : null}
@@ -334,8 +281,8 @@ export function ChapterPrologue() {
             className="font-sans font-black uppercase leading-[0.82]"
             style={{
               fontSize: intro
-                ? "clamp(3.2rem, 12vw, 8rem)"
-                : "clamp(3rem, 10vw, 7.5rem)",
+                ? "clamp(2.8rem, 11vw, 8rem)"
+                : "clamp(2.45rem, 10vw, 7.5rem)",
               textAlign: intro ? "center" : "left",
               fontFamily: "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif",
               fontWeight: 900,
@@ -356,7 +303,7 @@ export function ChapterPrologue() {
             {!intro ? (
               <motion.div
                 key="hero-extras"
-                className="mt-8 flex w-full flex-col gap-6 md:mt-12 md:flex-row md:items-end md:justify-between md:gap-8"
+                className="mt-6 flex w-full flex-col gap-5 md:mt-12 md:flex-row md:items-end md:justify-between md:gap-8"
                 initial={{ opacity: 0, y: startsSettled ? 8 : 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
@@ -368,7 +315,7 @@ export function ChapterPrologue() {
                     {hero.shortLine}
                   </p>
                 </div>
-                <div className="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:flex-wrap min-[420px]:items-center">
+                <div className="flex w-full max-w-[320px] flex-col items-stretch gap-3 min-[420px]:max-w-none min-[420px]:flex-row min-[420px]:flex-wrap min-[420px]:items-center md:w-auto">
                   <MagneticButton href={hero.ctaPrimary.href} variant="primary">
                     {hero.ctaPrimary.label}
                   </MagneticButton>

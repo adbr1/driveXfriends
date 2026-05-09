@@ -212,6 +212,29 @@ a {
   filter: brightness(0.95);
 }
 
+.window-control {
+  display: inline-flex;
+  height: 34px;
+  width: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--rgb-fg), 0.1);
+  background: rgba(var(--rgb-fg), 0.055);
+  color: var(--color-bone);
+  font-size: 16px;
+  line-height: 1;
+  transition: background-color 220ms var(--ease-cinema), transform 220ms var(--ease-cinema);
+}
+
+.window-control:hover {
+  background: rgba(var(--rgb-fg), 0.11);
+}
+
+.window-control:active {
+  transform: scale(0.96);
+}
+
 .tech-grid {
   background-image:
     linear-gradient(to right, rgba(var(--rgb-fg), 0.045) 1px, transparent 1px),
@@ -281,6 +304,30 @@ a {
   .led-live {
     animation: none;
     box-shadow: none;
+  }
+
+  .halo::after {
+    display: none;
+  }
+
+  .group:hover .group-hover\:scale-\[1\.04\],
+  .group:hover .group-hover\:scale-\[1\.035\] {
+    transform: none;
+  }
+
+  .group:hover .group-hover\:translate-x-1 {
+    transform: none;
+  }
+
+  .grayscale,
+  .moment-image {
+    filter: grayscale(0) !important;
+  }
+
+  .moment-image,
+  .group:hover .group-hover\:opacity-95,
+  .group:hover .group-hover\:opacity-90 {
+    opacity: 0.92;
   }
 }
 

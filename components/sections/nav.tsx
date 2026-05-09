@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "motion/react";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { chapters } from "@/lib/content";
 import { BrandMark } from "@/components/primitives/brand-mark";
@@ -75,21 +76,27 @@ const mobileLink = {
 };
 
 export function Nav() {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
   const { scrollYProgress } = useScroll();
   const progressScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   const [active, setActive] = useState<string>("prologue");
   const [open, setOpen] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(!isHome);
 
   useEffect(() => {
     const complete = () => setVisible(true);
 
+    if (!isHome) {
+      complete();
+      return;
+    }
     if (sessionStorage.getItem(INTRO_SESSION_KEY)) complete();
 
     window.addEventListener(INTRO_COMPLETE_EVENT, complete);
     return () => window.removeEventListener(INTRO_COMPLETE_EVENT, complete);
-  }, []);
+  }, [isHome]);
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -106,6 +113,8 @@ export function Nav() {
     });
     return () => obs.disconnect();
   }, []);
+
+  const sectionHref = (id: string) => (isHome ? `#${id}` : `/#${id}`);
 
   return (
     <>
@@ -138,8 +147,8 @@ export function Nav() {
         }}
         transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         style={{
-          backdropFilter: "blur(34px) saturate(150%)",
-          WebkitBackdropFilter: "blur(34px) saturate(150%)",
+          backdropFilter: "blur(18px) saturate(132%)",
+          WebkitBackdropFilter: "blur(18px) saturate(132%)",
           background:
             "linear-gradient(180deg, rgba(var(--rgb-bg),0.68), rgba(var(--rgb-bg),0.48) 48%, rgba(var(--rgb-bg),0.72))",
         }}
@@ -183,9 +192,9 @@ export function Nav() {
         <div className="relative flex items-center gap-2 rounded-full bg-[rgba(var(--rgb-bg),0.34)] p-1.5 shadow-[0_18px_60px_-28px_rgba(0,0,0,0.9)] backdrop-blur-xl md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0">
           <motion.a
             variants={navItem}
-            href="#prologue"
+            href={sectionHref("prologue")}
             aria-label="Drive x Friends — accueil"
-            className="surface-soft border-soft press group flex h-[52px] items-center gap-2.5 rounded-full px-4 text-[var(--color-bone)] transition-colors hover:text-[var(--color-bone)] md:h-auto md:gap-2.5 md:px-4 md:py-2.5"
+            className="surface-soft border-soft press group flex h-[52px] items-center gap-2.5 rounded-full px-4 text-[var(--color-bone)] transition-colors hover:text-[var(--color-bone)] md:h-11 md:gap-2.5 md:px-4"
           >
             <span aria-hidden className="relative inline-flex h-[22px] w-[22px] items-center justify-center md:h-[18px] md:w-[18px]">
               <span className="absolute inset-0 rounded-full border border-[rgba(var(--rgb-fg),0.5)] transition-all duration-500 group-hover:border-[rgba(var(--rgb-fg),0.85)] group-hover:rotate-90" />
@@ -197,16 +206,16 @@ export function Nav() {
           <motion.nav
             variants={navItem}
             aria-label="Chapitres"
-            className="surface-soft border-soft hidden items-center gap-1 rounded-full p-1 md:flex"
+            className="surface-soft border-soft hidden h-11 items-center gap-1 rounded-full p-1 md:flex"
           >
             {chapters.map((c) => {
-              const isActive = c.id === active;
+              const isActive = isHome && c.id === active;
               return (
                 <a
                   key={c.id}
-                  href={`#${c.id}`}
+                  href={sectionHref(c.id)}
                   className={cn(
-                    "relative rounded-full px-4 py-2 text-[12px] font-medium tracking-[0.01em] transition-colors duration-300",
+                    "relative inline-flex h-9 items-center rounded-full px-4 text-[12px] font-medium tracking-[0.01em] transition-colors duration-300",
                     isActive
                       ? "text-[var(--color-ink)]"
                       : "text-[var(--color-silver)] hover:text-[var(--color-bone)]",
@@ -223,12 +232,28 @@ export function Nav() {
                 </a>
               );
             })}
+            <a
+              href="/boutique"
+              className={cn(
+                "relative inline-flex h-9 items-center rounded-full px-4 text-[12px] font-medium tracking-[0.01em] transition-colors duration-300",
+                !isHome ? "text-[var(--color-ink)]" : "text-[var(--color-silver)] hover:text-[var(--color-bone)]",
+              )}
+            >
+              {!isHome ? (
+                <motion.span
+                  layoutId="nav-pill"
+                  className="absolute inset-0 rounded-full bg-[var(--color-bone)]"
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                />
+              ) : null}
+              <span className="relative">Boutique</span>
+            </a>
           </motion.nav>
 
           <motion.a
             variants={navItem}
-            href="#invitation"
-            className="surface-soft border-soft press hidden items-center gap-2 rounded-full px-4 py-2.5 text-[12px] font-medium text-[var(--color-bone)] transition-colors md:inline-flex"
+            href={sectionHref("invitation")}
+            className="surface-soft border-soft press hidden h-11 items-center gap-2 rounded-full px-4 text-[12px] font-medium text-[var(--color-bone)] transition-colors md:inline-flex"
           >
             <span className="led-live h-[6px] w-[6px] rounded-full bg-[var(--color-signal)]" />
             Adhérer
@@ -272,19 +297,19 @@ export function Nav() {
             style={{
               background:
                 "linear-gradient(180deg, rgba(var(--rgb-bg),0.74), rgba(var(--rgb-bg),0.52)), rgba(122,167,255,0.08)",
-              backdropFilter: "blur(46px) saturate(170%) contrast(1.08)",
-              WebkitBackdropFilter: "blur(46px) saturate(170%) contrast(1.08)",
+              backdropFilter: "blur(20px) saturate(140%) contrast(1.04)",
+              WebkitBackdropFilter: "blur(20px) saturate(140%) contrast(1.04)",
             }}
           >
             {chapters.map((c) => (
               <motion.a
                 variants={mobileLink}
                 key={c.id}
-                href={`#${c.id}`}
+                href={sectionHref(c.id)}
                 onClick={() => setOpen(false)}
                 className={cn(
                   "press flex items-center justify-between rounded-2xl px-4 py-3 text-sm transition-colors",
-                  c.id === active
+                  isHome && c.id === active
                     ? "bg-[var(--color-bone)] text-[var(--color-ink)]"
                     : "text-[var(--color-silver)] hover:text-[var(--color-bone)]",
                 )}
@@ -295,7 +320,19 @@ export function Nav() {
             ))}
             <motion.a
               variants={mobileLink}
-              href="#invitation"
+              href="/boutique"
+              onClick={() => setOpen(false)}
+              className={cn(
+                "press flex items-center justify-between rounded-2xl px-4 py-3 text-sm transition-colors",
+                !isHome ? "bg-[var(--color-bone)] text-[var(--color-ink)]" : "text-[var(--color-silver)]",
+              )}
+            >
+              <span>Boutique</span>
+              <span className="opacity-50">Shop</span>
+            </motion.a>
+            <motion.a
+              variants={mobileLink}
+              href={sectionHref("invitation")}
               onClick={() => setOpen(false)}
               className="press mt-1 flex items-center justify-center gap-2 rounded-2xl bg-[var(--color-bone)] px-4 py-3 text-sm font-medium text-[var(--color-ink)]"
             >

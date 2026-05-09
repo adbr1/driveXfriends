@@ -211,7 +211,7 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                                 <motion.circle
                                   cx={city.x}
                                   cy={city.y}
-                                  r={selected ? 18 : 10}
+                                  r={selected ? 8 : 5}
                                   fill={EVENT_COLORS[i % EVENT_COLORS.length]}
                                   opacity={selected ? 0.25 : 0.1}
                                   animate={selected ? { scale: [0.8, 1.4, 0.8] } : { scale: 1 }}
@@ -221,7 +221,7 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                                 <circle
                                   cx={city.x}
                                   cy={city.y}
-                                  r={selected ? 8 : 5}
+                                  r={selected ? 4 : 3}
                                   fill={EVENT_COLORS[i % EVENT_COLORS.length]}
                                   stroke="rgba(var(--rgb-bg),0.95)"
                                   strokeWidth="2"

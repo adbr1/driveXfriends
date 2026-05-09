@@ -112,16 +112,19 @@ export function Nav() {
       {/* Soft blur strip behind the nav — fades out vertically */}
       <motion.div
         aria-hidden
-        className="pointer-events-none fixed inset-x-0 top-0 z-[55] h-[120px] md:h-[110px]"
+        className="pointer-events-none fixed inset-x-0 top-0 z-[55] h-[220px] md:h-[200px]"
         initial={{ opacity: 0 }}
         animate={{ opacity: visible ? 1 : 0 }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         style={{
-          backdropFilter: "blur(18px) saturate(130%)",
-          WebkitBackdropFilter: "blur(18px) saturate(130%)",
-          background: "linear-gradient(180deg, rgba(var(--rgb-bg),0.72) 0%, rgba(var(--rgb-bg),0.38) 62%, transparent 100%)",
-          maskImage: "linear-gradient(180deg, #000 0%, #000 60%, transparent 100%)",
-          WebkitMaskImage: "linear-gradient(180deg, #000 0%, #000 60%, transparent 100%)",
+          backdropFilter: "blur(14px) saturate(120%)",
+          WebkitBackdropFilter: "blur(14px) saturate(120%)",
+          background:
+            "linear-gradient(180deg, rgba(var(--rgb-bg),0.62) 0%, rgba(var(--rgb-bg),0.34) 34%, rgba(var(--rgb-bg),0.12) 62%, transparent 100%)",
+          maskImage:
+            "linear-gradient(180deg, #000 0%, rgba(0,0,0,0.95) 28%, rgba(0,0,0,0.55) 58%, rgba(0,0,0,0.16) 78%, transparent 100%)",
+          WebkitMaskImage:
+            "linear-gradient(180deg, #000 0%, rgba(0,0,0,0.95) 28%, rgba(0,0,0,0.55) 58%, rgba(0,0,0,0.16) 78%, transparent 100%)",
         }}
       />
 

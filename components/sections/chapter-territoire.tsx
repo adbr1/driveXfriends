@@ -14,18 +14,13 @@ const EVENT_COLORS = [
   "rgba(184,192,204,0.82)",
 ];
 
-type RoutePoint = {
-  x: number;
-  y: number;
-};
-
 export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
   const ref = useRef<HTMLElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const draw = useTransform(scrollYProgress, [0.1, 0.68], [0, 1]);
 
-  const { viewBox, events } = data;
+  const { viewBox, countries, roads, cities, events } = data;
   const [activeEventId, setActiveEventId] = useState(events[0]?.id ?? "");
   const activeEvent = useMemo(
     () => events.find((event) => event.id === activeEventId) ?? events[0],
@@ -33,15 +28,8 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
   );
   const activeIndex = Math.max(0, events.findIndex((event) => event.id === activeEvent?.id));
   const activeColor = EVENT_COLORS[activeIndex % EVENT_COLORS.length];
-  const routePoints = useMemo(
-    () => buildRoutePoints(activeEvent?.waypoints.length ?? 4, activeEvent?.distance === "local"),
-    [activeEvent],
-  );
-  const routeD = useMemo(() => buildRoutePath(routePoints), [routePoints]);
-  const stopLabels = useMemo(
-    () => buildStopLabels(activeEvent?.location ?? "Destination", routePoints.length),
-    [activeEvent, routePoints.length],
-  );
+  const mapFocus = activeEvent?.focus ?? { x: viewBox.w / 2, y: viewBox.h / 2 };
+  const mapViewBox = `${mapFocus.x - 135} ${mapFocus.y - 104} 270 208`;
 
   const selectEvent = (id: string) => {
     setActiveEventId(id);
@@ -143,23 +131,15 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                       "radial-gradient(ellipse at 82% 18%, rgba(244,241,234,0.12), transparent 34%), radial-gradient(ellipse at 18% 84%, rgba(122,167,255,0.16), transparent 38%), linear-gradient(135deg, rgba(var(--rgb-fg),0.055), rgba(var(--rgb-bg),0.1) 48%, rgba(var(--rgb-fg),0.035))",
                   }}
                 />
-                <div aria-hidden className="absolute inset-x-8 top-20 h-px bg-[linear-gradient(90deg,transparent,rgba(var(--rgb-fg),0.18),transparent)]" />
-                <div aria-hidden className="absolute bottom-8 left-8 right-8 h-px bg-[linear-gradient(90deg,transparent,rgba(var(--rgb-fg),0.14),transparent)]" />
-                <motion.div
-                  aria-hidden
-                  className="absolute -right-[10%] top-[18%] h-[48%] w-[58%] rounded-full border border-[rgba(var(--rgb-fg),0.08)]"
-                  animate={{ rotate: [0, 2.5, 0], scale: [1, 1.025, 1] }}
-                  transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-                  style={{
-                    background: "radial-gradient(ellipse at 50% 50%, rgba(var(--rgb-fg),0.055), transparent 62%)",
-                  }}
-                />
-
                 <motion.svg
-                  viewBox="0 0 1000 640"
+                  key={activeEvent?.id}
+                  viewBox={mapViewBox}
                   className="absolute inset-0 h-full w-full"
                   preserveAspectRatio="xMidYMid meet"
                   aria-hidden
+                  initial={{ opacity: 0, scale: 1.025 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <defs>
                     <filter id="event-route-glow">
@@ -177,85 +157,102 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                   </defs>
 
                   <g>
+                    {countries.map((country) => (
+                      <path
+                        key={country.id}
+                        d={country.d}
+                        fill={country.isLU ? "rgba(166,255,203,0.18)" : "rgba(var(--rgb-fg),0.045)"}
+                        stroke={country.isLU ? "rgba(166,255,203,0.5)" : "rgba(var(--rgb-fg),0.12)"}
+                        strokeWidth={country.isLU ? 1.8 : 0.8}
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    ))}
+                  </g>
+
+                  <g>
+                    {roads.map((road) => (
+                      <path
+                        key={road.id}
+                        d={road.d}
+                        fill="none"
+                        stroke={road.kind === "primary" ? "rgba(var(--rgb-fg),0.18)" : "rgba(var(--rgb-fg),0.09)"}
+                        strokeWidth={road.kind === "primary" ? 1.35 : 0.8}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    ))}
+                  </g>
+
+                  <g>
                     <path
-                      d={routeD}
+                      d={activeEvent?.d ?? ""}
                       fill="none"
-                      stroke="rgba(var(--rgb-fg),0.09)"
-                      strokeWidth="34"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <motion.path
-                      d={routeD}
-                      fill="none"
-                      stroke="rgba(var(--rgb-fg),0.18)"
-                      strokeWidth="2"
-                      strokeDasharray="10 16"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      style={{ pathLength: draw }}
-                    />
-                    <motion.path
-                      key={activeEvent?.id}
-                      d={routeD}
-                      fill="none"
-                      stroke="url(#route-gradient)"
+                      stroke="rgba(var(--rgb-bg),0.72)"
                       strokeWidth="8"
                       strokeLinecap="round"
                       strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    <motion.path
+                      d={activeEvent?.d ?? ""}
+                      fill="none"
+                      stroke="url(#route-gradient)"
+                      strokeWidth="4.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       filter="url(#event-route-glow)"
+                      vectorEffect="non-scaling-stroke"
                       initial={{ pathLength: 0, opacity: 0 }}
                       animate={{ pathLength: 1, opacity: 1 }}
+                      style={{ pathLength: draw }}
                       transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1] }}
                     />
+                  </g>
 
-                    {routePoints.map((point, i) => {
-                      const isFirst = i === 0;
-                      const isLast = i === routePoints.length - 1;
+                  <g>
+                    {cities.map((city) => {
+                      const isTarget = city.key === activeEvent?.target;
+                      const isOrigin = city.key === "luxembourg";
                       return (
-                        <g key={`${point.x}-${point.y}-${i}`}>
-                          {isLast ? (
+                        <g key={city.key}>
+                          {isTarget ? (
                             <motion.circle
-                              cx={point.x}
-                              cy={point.y}
-                              r="34"
+                              cx={city.x}
+                              cy={city.y}
+                              r="7"
                               fill="none"
                               stroke={activeColor}
-                              strokeOpacity="0.22"
-                              strokeWidth="2"
-                              animate={{ scale: [0.84, 1.22, 0.84], opacity: [0.18, 0.5, 0.18] }}
+                              strokeOpacity="0.34"
+                              strokeWidth="1.4"
+                              animate={{ scale: [0.85, 1.7, 0.85], opacity: [0.22, 0.58, 0.22] }}
                               transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-                              style={{ transformOrigin: `${point.x}px ${point.y}px` }}
+                              style={{ transformOrigin: `${city.x}px ${city.y}px` }}
+                              vectorEffect="non-scaling-stroke"
                             />
                           ) : null}
-                          <motion.circle
-                            cx={point.x}
-                            cy={point.y}
-                            r={isFirst || isLast ? 16 : 10}
-                            fill={isFirst ? "rgba(166,255,203,1)" : isLast ? activeColor : "rgba(var(--rgb-fg),0.72)"}
-                            stroke="rgba(var(--rgb-bg),0.9)"
-                            strokeWidth="5"
-                            initial={{ opacity: 0, scale: 0.6 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.12 + i * 0.08, duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+                          <circle
+                            cx={city.x}
+                            cy={city.y}
+                            r={isOrigin || isTarget ? 3.8 : city.event ? 2.6 : 1.7}
+                            fill={isOrigin ? "rgba(166,255,203,1)" : isTarget ? activeColor : "rgba(var(--rgb-fg),0.68)"}
+                            stroke="rgba(var(--rgb-bg),0.92)"
+                            strokeWidth="1.6"
+                            vectorEffect="non-scaling-stroke"
                           />
-                          <motion.text
-                            x={point.x}
-                            y={point.y + (isLast ? 46 : -28)}
-                            fill={isFirst || isLast ? "rgba(var(--rgb-fg),0.94)" : "rgba(var(--rgb-fg),0.5)"}
-                            fontSize={isFirst || isLast ? 20 : 14}
-                            fontWeight={isFirst || isLast ? 760 : 560}
-                            textAnchor="middle"
-                            letterSpacing="0.02em"
-                            initial={{ opacity: 0, y: point.y + (isLast ? 36 : -18) }}
-                            whileInView={{ opacity: 1, y: point.y + (isLast ? 46 : -28) }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.22 + i * 0.08, duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-                            style={{ fontFamily: "var(--font-sans)" }}
-                          >
-                            {stopLabels[i]}
-                          </motion.text>
+                          {(isOrigin || isTarget || city.event) ? (
+                            <text
+                              x={city.x + 7}
+                              y={city.y - 5}
+                              fill={isOrigin || isTarget ? "rgba(var(--rgb-fg),0.9)" : "rgba(var(--rgb-fg),0.5)"}
+                              fontSize="7"
+                              fontWeight={isOrigin || isTarget ? 760 : 560}
+                              letterSpacing="0"
+                              style={{ fontFamily: "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif" }}
+                            >
+                              {city.short}
+                            </text>
+                          ) : null}
                         </g>
                       );
                     })}
@@ -306,51 +303,4 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
       </div>
     </section>
   );
-}
-
-function buildRoutePoints(count: number, local: boolean): RoutePoint[] {
-  if (local) {
-    return [
-      { x: 205, y: 420 },
-      { x: 410, y: 310 },
-      { x: 615, y: 405 },
-      { x: 790, y: 305 },
-    ];
-  }
-
-  const base = [
-    { x: 140, y: 470 },
-    { x: 325, y: 390 },
-    { x: 510, y: 280 },
-    { x: 690, y: 210 },
-    { x: 850, y: 295 },
-  ];
-
-  return base.slice(0, Math.max(3, Math.min(count, base.length)));
-}
-
-function buildRoutePath(points: RoutePoint[]) {
-  if (points.length < 2) return "";
-
-  return points.reduce((path, point, index) => {
-    if (index === 0) return `M ${point.x} ${point.y}`;
-
-    const prev = points[index - 1];
-    const cx = (prev.x + point.x) / 2;
-    const cy = Math.min(prev.y, point.y) - 56 + index * 8;
-    return `${path} Q ${cx} ${cy} ${point.x} ${point.y}`;
-  }, "");
-}
-
-function buildStopLabels(destination: string, count: number) {
-  const labels = ["Luxembourg", "Pause", "Route", "Arrivee"];
-  const cleanDestination = destination.split("/")[0]?.trim() || "Destination";
-
-  if (count <= 3) return ["Luxembourg", "Route", cleanDestination];
-
-  return Array.from({ length: count }, (_, i) => {
-    if (i === 0) return "Luxembourg";
-    if (i === count - 1) return cleanDestination;
-    return labels[i] ?? "Route";
-  });
 }

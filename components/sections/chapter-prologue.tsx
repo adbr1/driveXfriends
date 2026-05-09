@@ -35,10 +35,7 @@ const LETTER_START = 1.55; // timing of letter rain start (after flash)
 
 export function ChapterPrologue() {
   const reduced = usePrefersReducedMotion();
-  const [phase, setPhase] = useState<"intro" | "exiting" | "settled">(() => {
-    if (typeof window === "undefined") return "intro";
-    return sessionStorage.getItem(SESSION_KEY) ? "settled" : "intro";
-  });
+  const [phase, setPhase] = useState<"intro" | "exiting" | "settled">("intro");
 
   useEffect(() => {
     const played = sessionStorage.getItem(SESSION_KEY);
@@ -77,7 +74,7 @@ export function ChapterPrologue() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const heroY = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const canvasScale = useTransform(scrollYProgress, [0, 1], [1, 1.06]);
-  const canvasScrollOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0.15]);
+  const canvasScrollOpacity = useTransform(scrollYProgress, [0, 0.6], [0, 0]);
   const manifestoLineY = useTransform(scrollYProgress, [0.52, 1], [70, -70]);
   const manifestoGlow = useTransform(scrollYProgress, [0.48, 0.72, 1], [0.18, 0.72, 0.28]);
 
@@ -93,16 +90,18 @@ export function ChapterPrologue() {
         <motion.div
           aria-hidden
           className="absolute inset-0 z-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: intro ? 0 : 1 }}
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="absolute inset-0 bg-[rgba(var(--rgb-bg),1)]" />
           <div
             className="hero-background-placeholder absolute inset-0"
             style={{
+              opacity: intro ? 0 : 1,
+              transition: "opacity 1000ms var(--ease-cinema)",
               background:
-                "linear-gradient(90deg, rgba(var(--rgb-bg),0.92) 0%, rgba(var(--rgb-bg),0.54) 45%, rgba(var(--rgb-bg),0.22) 100%), linear-gradient(180deg, rgba(var(--rgb-bg),0.18) 0%, transparent 45%, rgba(var(--rgb-bg),0.92) 100%), url('/images/hero-background.jpg'), radial-gradient(ellipse at 72% 54%, rgba(244,241,234,0.18) 0%, rgba(244,241,234,0.05) 24%, transparent 48%), linear-gradient(112deg, #050505 0%, #090a0b 42%, #151516 100%)",
+                "linear-gradient(90deg, rgba(var(--rgb-bg),0.58) 0%, rgba(var(--rgb-bg),0.28) 45%, rgba(var(--rgb-bg),0.08) 100%), linear-gradient(180deg, rgba(var(--rgb-bg),0.1) 0%, transparent 45%, rgba(var(--rgb-bg),0.62) 100%), url('/images/hero-background.jpg'), radial-gradient(ellipse at 72% 54%, rgba(244,241,234,0.18) 0%, rgba(244,241,234,0.05) 24%, transparent 48%), linear-gradient(112deg, #050505 0%, #090a0b 42%, #151516 100%)",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -111,6 +110,8 @@ export function ChapterPrologue() {
             aria-hidden
             className="absolute bottom-[12%] right-[-8%] h-[28%] w-[64%] opacity-70 blur-[1px] sm:bottom-[9%] sm:right-[-5%] sm:h-[34%] sm:w-[58%]"
             style={{
+              opacity: intro ? 0 : 0.7,
+              transition: "opacity 1000ms var(--ease-cinema)",
               clipPath: "polygon(4% 58%, 16% 34%, 38% 20%, 72% 22%, 92% 42%, 98% 67%, 84% 76%, 18% 78%)",
               background:
                 "linear-gradient(180deg, rgba(244,241,234,0.16), rgba(244,241,234,0.035) 42%, rgba(0,0,0,0.08)), linear-gradient(90deg, rgba(122,167,255,0.08), transparent 34%)",
@@ -121,6 +122,8 @@ export function ChapterPrologue() {
             aria-hidden
             className="absolute bottom-[9%] right-[9%] h-[9vw] max-h-[82px] min-h-[44px] w-[9vw] min-w-[44px] max-w-[82px] rounded-full opacity-55"
             style={{
+              opacity: intro ? 0 : 0.55,
+              transition: "opacity 1000ms var(--ease-cinema)",
               background:
                 "radial-gradient(circle, rgba(var(--rgb-bg),0.92) 0 36%, rgba(244,241,234,0.2) 38% 43%, rgba(var(--rgb-bg),0.72) 45% 58%, transparent 60%)",
             }}
@@ -129,6 +132,8 @@ export function ChapterPrologue() {
             aria-hidden
             className="absolute bottom-[9%] right-[42%] h-[8vw] max-h-[74px] min-h-[38px] w-[8vw] min-w-[38px] max-w-[74px] rounded-full opacity-42"
             style={{
+              opacity: intro ? 0 : 0.42,
+              transition: "opacity 1000ms var(--ease-cinema)",
               background:
                 "radial-gradient(circle, rgba(var(--rgb-bg),0.92) 0 36%, rgba(244,241,234,0.18) 38% 43%, rgba(var(--rgb-bg),0.72) 45% 58%, transparent 60%)",
             }}
@@ -136,8 +141,10 @@ export function ChapterPrologue() {
           <div
             className="absolute inset-0"
             style={{
+              opacity: intro ? 0 : 1,
+              transition: "opacity 1000ms var(--ease-cinema)",
               background:
-                "linear-gradient(90deg, rgba(var(--rgb-bg),0.86) 0%, rgba(var(--rgb-bg),0.42) 44%, rgba(var(--rgb-bg),0.2) 100%), linear-gradient(180deg, rgba(var(--rgb-bg),0.36) 0%, transparent 42%, rgba(var(--rgb-bg),0.94) 100%)",
+                "linear-gradient(90deg, rgba(var(--rgb-bg),0.38) 0%, rgba(var(--rgb-bg),0.14) 44%, rgba(var(--rgb-bg),0.04) 100%), linear-gradient(180deg, rgba(var(--rgb-bg),0.18) 0%, transparent 42%, rgba(var(--rgb-bg),0.7) 100%)",
             }}
           />
         </motion.div>
@@ -246,14 +253,14 @@ export function ChapterPrologue() {
           transition={{ duration: 1.1, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
           style={{
             background:
-              "linear-gradient(180deg, rgba(var(--rgb-bg),0.4) 0%, rgba(var(--rgb-bg),0) 30%, rgba(var(--rgb-bg),0) 60%, rgba(var(--rgb-bg),0.9) 100%)",
+              "linear-gradient(180deg, rgba(var(--rgb-bg),0.22) 0%, rgba(var(--rgb-bg),0) 30%, rgba(var(--rgb-bg),0) 60%, rgba(var(--rgb-bg),0.68) 100%)",
           }}
         />
         <motion.div
           aria-hidden
           className="absolute inset-0 z-[2] tech-grid"
           initial={{ opacity: 0 }}
-          animate={{ opacity: intro ? 0 : 0.5 }}
+          animate={{ opacity: 0 }}
           transition={{ duration: 1.4 }}
         />
 

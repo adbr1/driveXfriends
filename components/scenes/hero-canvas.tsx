@@ -85,7 +85,6 @@ export default function HeroCanvas() {
   const reduced = usePrefersReducedMotion();
   const scheme = usePrefersColorScheme();
   const isLight = scheme === "light";
-
   return (
     <Canvas
       dpr={[1, 1.6]}
@@ -93,8 +92,7 @@ export default function HeroCanvas() {
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       frameloop={reduced ? "demand" : "always"}
     >
-      <color attach="background" args={[isLight ? "#f1ede4" : "#050505"]} />
-      <fog attach="fog" args={[isLight ? "#f1ede4" : "#050505", 8, 22]} />
+      <fog attach="fog" args={[scheme === "light" ? "#f1ede4" : "#050505", 8, 22]} />
       <ambientLight intensity={isLight ? 0.55 : 0.25} />
       <directionalLight position={[6, 6, 4]} intensity={isLight ? 0.5 : 0.7} color={isLight ? "#ffffff" : "#f4f1ea"} />
       <directionalLight position={[-6, -2, 2]} intensity={isLight ? 0.3 : 0.5} color="#7aa7ff" />

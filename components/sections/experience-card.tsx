@@ -4,36 +4,15 @@ import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { type MouseEvent, useRef, useState } from "react";
 import { useIsTouch, usePrefersReducedMotion } from "@/lib/hooks";
 
-type Visual = "balades" | "rencontres" | "cars-coffee" | "communaute";
-
-const PLACEHOLDER_IMAGES: Record<Visual, { src: string; alt: string }> = {
-  balades: {
-    src: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80",
-    alt: "Placeholder photo de voiture sportive sur route",
-  },
-  rencontres: {
-    src: "https://images.unsplash.com/photo-1541443131876-44b03de101c5?auto=format&fit=crop&w=900&q=80",
-    alt: "Placeholder photo d'evenement automobile",
-  },
-  "cars-coffee": {
-    src: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&w=900&q=80",
-    alt: "Placeholder photo cars and coffee",
-  },
-  communaute: {
-    src: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=900&q=80",
-    alt: "Placeholder photo communaute automobile",
-  },
-};
-
 type Props = {
   index: number;
   label: string;
   title: string;
   body: string;
-  visual: Visual;
+  image: { src: string; alt: string };
 };
 
-export function ExperienceCard({ index, label, title, body, visual }: Props) {
+export function ExperienceCard({ index, label, title, body, image }: Props) {
   const [hover, setHover] = useState(false);
   const ref = useRef<HTMLElement>(null);
   const isTouch = useIsTouch();
@@ -100,7 +79,7 @@ export function ExperienceCard({ index, label, title, body, visual }: Props) {
       </div>
 
       <div className="relative z-[1] my-7 h-[190px] sm:my-10 sm:h-[220px] md:my-12">
-        <Visual visual={visual} hover={hover} />
+        <Visual image={image} hover={hover} />
       </div>
 
       <div className="relative z-[1]">
@@ -123,8 +102,7 @@ export function ExperienceCard({ index, label, title, body, visual }: Props) {
   );
 }
 
-function Visual({ visual, hover }: { visual: Visual; hover: boolean }) {
-  const image = PLACEHOLDER_IMAGES[visual];
+function Visual({ image, hover }: { image: { src: string; alt: string }; hover: boolean }) {
   return (
     <motion.div
       className="absolute inset-0 overflow-hidden rounded-[18px] border border-[rgba(var(--rgb-fg),0.07)] bg-[rgba(var(--rgb-fg),0.035)]"
@@ -145,9 +123,6 @@ function Visual({ visual, hover }: { visual: Visual; hover: boolean }) {
             "linear-gradient(180deg, rgba(var(--rgb-bg),0.04), rgba(var(--rgb-bg),0.35)), radial-gradient(ellipse at 80% 20%, rgba(122,167,255,0.2), transparent 50%)",
         }}
       />
-      <span className="absolute left-4 top-4 rounded-full bg-[rgba(var(--rgb-bg),0.48)] px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--color-silver)] backdrop-blur">
-        Image placeholder
-      </span>
     </motion.div>
   );
 }

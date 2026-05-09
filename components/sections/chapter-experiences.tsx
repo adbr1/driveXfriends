@@ -3,8 +3,6 @@ import { ChapterCard } from "@/components/primitives/chapter-card";
 import { RevealTitle, SectionSequence, SequenceItem } from "@/components/primitives/section-sequence";
 import { ExperienceCard } from "./experience-card";
 
-const VISUALS = ["balades", "rencontres", "cars-coffee", "communaute"] as const;
-
 export function ChapterExperiences() {
   return (
     <section id="experiences" aria-labelledby="experiences-title" className="relative">
@@ -40,7 +38,7 @@ export function ChapterExperiences() {
                 label={e.label}
                 title={e.title}
                 body={e.body}
-                visual={VISUALS[i]}
+                image={e.image}
               />
             ))}
           </SequenceItem>

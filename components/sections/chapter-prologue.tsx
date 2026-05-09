@@ -440,7 +440,7 @@ export function ChapterPrologue() {
                 className="text-grad font-sans font-medium leading-[0.95] tracking-[-0.025em]"
                 style={{ fontSize: "clamp(2.25rem, 10vw, 5.5rem)" }}
               >
-                <SplitTitle text={manifesto.title} />
+                <SplitTitle text={manifesto.title} isTouch={isTouch} />
               </h2>
               <div className="mt-8 max-w-[58ch] text-[clamp(1rem,1.6vw,1.5rem)] leading-[1.65] sm:mt-12 max-md:text-[15px]">
                 <MotionText
@@ -456,8 +456,8 @@ export function ChapterPrologue() {
                     key={w}
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "0px 0px -18% 0px" }}
-                    transition={{ delay: i * 0.04, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+                    viewport={{ once: true, margin: isTouch ? "0px 0px -30% 0px" : "0px 0px -18% 0px" }}
+                    transition={{ delay: i * 0.04 + (isTouch ? 0.1 : 0), duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                     className="rounded-full bg-[rgba(var(--rgb-fg),0.05)] px-3.5 py-1.5 text-[12px] tracking-[0.04em] text-[var(--color-silver)]"
                   >
                     {w}
@@ -602,7 +602,7 @@ function SpeedStreaks() {
   );
 }
 
-function SplitTitle({ text }: { text: string }) {
+function SplitTitle({ text, isTouch = false }: { text: string; isTouch?: boolean }) {
   const lines = text.split(". ").map((l, i, arr) => l + (i < arr.length - 1 ? "." : ""));
   return (
     <>
@@ -612,8 +612,8 @@ function SplitTitle({ text }: { text: string }) {
             className="block"
             initial={{ y: "100%", filter: "blur(8px)" }}
             whileInView={{ y: "0%", filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "0px 0px -18% 0px" }}
-            transition={{ delay: i * 0.1, duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, margin: isTouch ? "0px 0px -30% 0px" : "0px 0px -18% 0px" }}
+            transition={{ delay: i * 0.1 + (isTouch ? 0.1 : 0), duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           >
             {line}
           </motion.span>

@@ -53,14 +53,19 @@ export function MotionText({
     );
   }
 
+  /* On touch devices, use a deeper viewport margin so the animation only
+     fires once the user has clearly scrolled the section into view,
+     preventing the "text was always there" feeling. */
+  const viewportMargin = isTouch ? "0px 0px -30% 0px" : "0px 0px -18% 0px";
+
   return (
     <Wrapper
       className={className}
       style={style}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "0px 0px -18% 0px" }}
-      transition={{ staggerChildren: stagger }}
+      viewport={{ once: true, margin: viewportMargin }}
+      transition={{ staggerChildren: stagger, delayChildren: isTouch ? 0.1 : 0 }}
     >
       {words.map((word, i) => {
         if (/^\s+$/.test(word)) return <span key={i}>{word}</span>;
@@ -85,3 +90,4 @@ export function MotionText({
     </Wrapper>
   );
 }
+

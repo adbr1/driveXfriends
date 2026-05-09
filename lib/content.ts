@@ -15,6 +15,7 @@ export const chapters = [
   { id: "moments", roman: "IV", title: "Moments", timecode: "00:46:21" },
   { id: "invitation", roman: "V", title: "Invitation", timecode: "01:02:55" },
   { id: "contact", roman: "VI", title: "Contact", timecode: "01:10:03" },
+  { id: "boutique", roman: "VII", title: "Boutique", timecode: "01:18:44" },
 ] as const;
 
 export type ChapterId = (typeof chapters)[number]["id"];

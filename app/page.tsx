@@ -9,6 +9,7 @@ import { Marquee } from "@/components/sections/marquee";
 import { ChapterMoments } from "@/components/sections/chapter-moments";
 import { ChapterInvitation } from "@/components/sections/chapter-invitation";
 import { ChapterContact } from "@/components/sections/chapter-contact";
+import { ChapterBoutique } from "@/components/sections/chapter-boutique";
 import { Coda } from "@/components/sections/coda";
 import { SiteFooter } from "@/components/sections/footer";
 
@@ -50,6 +51,9 @@ export default function Home() {
         <ChapterInvitation />
 
         <ChapterContact />
+
+        <ChapterBoutique />
+
         <Coda />
       </main>
       <SiteFooter />

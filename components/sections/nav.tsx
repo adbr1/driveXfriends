@@ -232,22 +232,7 @@ export function Nav() {
                 </a>
               );
             })}
-            <a
-              href="/boutique"
-              className={cn(
-                "relative inline-flex h-9 items-center rounded-full px-4 text-[12px] font-medium tracking-[0.01em] transition-colors duration-300",
-                !isHome ? "text-[var(--color-ink)]" : "text-[var(--color-silver)] hover:text-[var(--color-bone)]",
-              )}
-            >
-              {!isHome ? (
-                <motion.span
-                  layoutId="nav-pill"
-                  className="absolute inset-0 rounded-full bg-[var(--color-bone)]"
-                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                />
-              ) : null}
-              <span className="relative">Boutique</span>
-            </a>
+
           </motion.nav>
 
           <motion.a
@@ -318,18 +303,7 @@ export function Nav() {
                 <span className="opacity-50">{c.roman}</span>
               </motion.a>
             ))}
-            <motion.a
-              variants={mobileLink}
-              href="/boutique"
-              onClick={() => setOpen(false)}
-              className={cn(
-                "press flex items-center justify-between rounded-2xl px-4 py-3 text-sm transition-colors",
-                !isHome ? "bg-[var(--color-bone)] text-[var(--color-ink)]" : "text-[var(--color-silver)]",
-              )}
-            >
-              <span>Boutique</span>
-              <span className="opacity-50">Shop</span>
-            </motion.a>
+
             <motion.a
               variants={mobileLink}
               href={sectionHref("invitation")}

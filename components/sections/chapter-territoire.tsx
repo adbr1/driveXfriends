@@ -175,13 +175,13 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                 </div>
 
                 <div className="relative z-[1] mt-5 grid gap-5 lg:grid-cols-[1fr_0.78fr] lg:items-end">
-                  <div className="relative min-h-[300px] overflow-hidden rounded-[22px] border border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.34)] sm:min-h-[420px]">
+                  <div className="relative min-h-[420px] overflow-hidden rounded-[22px] border border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.34)] sm:min-h-[560px]">
                     <svg
                       viewBox={`0 0 ${viewBox.w} ${viewBox.h}`}
                       className="absolute inset-0 h-full w-full"
                       preserveAspectRatio="xMidYMid meet"
                       aria-hidden
-                      style={{ transform: "scale(1.34)", transformOrigin: "50% 52%" }}
+                      style={{ transform: "scale(1.5)", transformOrigin: "50% 52%" }}
                     >
                       <g>
                         {countries.map((country) => (
@@ -204,7 +204,7 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                             <motion.circle
                               cx={city.x}
                               cy={city.y}
-                              r={selected ? 36 : 20}
+                              r={selected ? 44 : 26}
                               fill={EVENT_COLORS[i % EVENT_COLORS.length]}
                               opacity={selected ? 0.2 : 0.08}
                               animate={selected ? { scale: [0.8, 1.3, 0.8] } : { scale: 1 }}
@@ -214,7 +214,7 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                             <circle
                               cx={city.x}
                               cy={city.y}
-                              r={selected ? 17 : 10}
+                              r={selected ? 22 : 14}
                               fill={EVENT_COLORS[i % EVENT_COLORS.length]}
                               stroke="rgba(var(--rgb-bg),0.95)"
                               strokeWidth="4"

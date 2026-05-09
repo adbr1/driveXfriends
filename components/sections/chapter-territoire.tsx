@@ -14,27 +14,34 @@ const EVENT_COLORS = [
   "rgba(184,192,204,0.82)",
 ];
 
+type RoutePoint = {
+  x: number;
+  y: number;
+};
+
 export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
   const ref = useRef<HTMLElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const draw = useTransform(scrollYProgress, [0.1, 0.7], [0, 1]);
+  const draw = useTransform(scrollYProgress, [0.1, 0.68], [0, 1]);
 
-  const { viewBox, countries, cities, events, roads } = data;
+  const { viewBox, events } = data;
   const [activeEventId, setActiveEventId] = useState(events[0]?.id ?? "");
   const activeEvent = useMemo(
     () => events.find((event) => event.id === activeEventId) ?? events[0],
     [activeEventId, events],
   );
-
-  const mapViewBox = activeEvent
-    ? (() => {
-        const scale = activeEvent.focus.scale * 1.16;
-        const w = viewBox.w / scale;
-        const h = viewBox.h / scale;
-        return `${activeEvent.focus.x - w / 2} ${activeEvent.focus.y - h / 2} ${w} ${h}`;
-      })()
-    : `0 0 ${viewBox.w} ${viewBox.h}`;
+  const activeIndex = Math.max(0, events.findIndex((event) => event.id === activeEvent?.id));
+  const activeColor = EVENT_COLORS[activeIndex % EVENT_COLORS.length];
+  const routePoints = useMemo(
+    () => buildRoutePoints(activeEvent?.waypoints.length ?? 4, activeEvent?.distance === "local"),
+    [activeEvent],
+  );
+  const routeD = useMemo(() => buildRoutePath(routePoints), [routePoints]);
+  const stopLabels = useMemo(
+    () => buildStopLabels(activeEvent?.location ?? "Destination", routePoints.length),
+    [activeEvent, routePoints.length],
+  );
 
   const selectEvent = (id: string) => {
     setActiveEventId(id);
@@ -63,7 +70,7 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
               <SequenceItem>
                 <p className="mt-6 max-w-[44ch] text-[15px] leading-[1.65] text-[var(--color-silver)] sm:mt-7 sm:text-[16px]">
                   {territoire.body} Les prochains rendez-vous dessinent une saison entre Luxembourg, Foret-Noire
-                  et Côte d'Azur.
+                  et Cote d'Azur.
                 </p>
               </SequenceItem>
 
@@ -71,7 +78,7 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                 <div className="mt-8">
                   <div className="mb-3 flex items-center justify-between gap-3 px-1">
                     <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-silver)]">
-                      Prochains événements
+                      Prochains evenements
                     </span>
                     <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--color-silver-dim)]">
                       Linktree
@@ -125,170 +132,129 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
 
             <SequenceItem className="relative col-span-12 lg:col-span-7" ref={mapRef}>
               <div
-                className="relative min-h-[380px] w-full overflow-hidden rounded-[24px] surface-soft border-soft sm:rounded-[36px]"
+                className="relative min-h-[420px] w-full overflow-hidden rounded-[24px] border border-[rgba(var(--rgb-fg),0.12)] bg-[rgba(var(--rgb-fg),0.035)] shadow-[0_34px_120px_-70px_rgba(0,0,0,0.95)] backdrop-blur-xl sm:rounded-[36px]"
                 style={{ aspectRatio: `${viewBox.w} / ${viewBox.h}` }}
               >
-                <div aria-hidden className="absolute inset-0 tech-grid opacity-40" />
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0"
+                  className="absolute inset-0"
                   style={{
                     background:
-                      "radial-gradient(ellipse at 50% 45%, rgba(122,167,255,0.12), transparent 48%), linear-gradient(180deg, rgba(var(--rgb-bg),0.08), rgba(var(--rgb-bg),0.32))",
+                      "radial-gradient(ellipse at 82% 18%, rgba(244,241,234,0.12), transparent 34%), radial-gradient(ellipse at 18% 84%, rgba(122,167,255,0.16), transparent 38%), linear-gradient(135deg, rgba(var(--rgb-fg),0.055), rgba(var(--rgb-bg),0.1) 48%, rgba(var(--rgb-fg),0.035))",
+                  }}
+                />
+                <div aria-hidden className="absolute inset-x-8 top-20 h-px bg-[linear-gradient(90deg,transparent,rgba(var(--rgb-fg),0.18),transparent)]" />
+                <div aria-hidden className="absolute bottom-8 left-8 right-8 h-px bg-[linear-gradient(90deg,transparent,rgba(var(--rgb-fg),0.14),transparent)]" />
+                <motion.div
+                  aria-hidden
+                  className="absolute -right-[10%] top-[18%] h-[48%] w-[58%] rounded-full border border-[rgba(var(--rgb-fg),0.08)]"
+                  animate={{ rotate: [0, 2.5, 0], scale: [1, 1.025, 1] }}
+                  transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+                  style={{
+                    background: "radial-gradient(ellipse at 50% 50%, rgba(var(--rgb-fg),0.055), transparent 62%)",
                   }}
                 />
 
                 <motion.svg
-                  viewBox={mapViewBox}
-                  animate={{ viewBox: mapViewBox }}
-                  transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                  viewBox="0 0 1000 640"
                   className="absolute inset-0 h-full w-full"
                   preserveAspectRatio="xMidYMid meet"
                   aria-hidden
                 >
                   <defs>
                     <filter id="event-route-glow">
-                      <feGaussianBlur stdDeviation="4.8" result="b" />
+                      <feGaussianBlur stdDeviation="5" result="b" />
                       <feMerge>
                         <feMergeNode in="b" />
                         <feMergeNode in="SourceGraphic" />
                       </feMerge>
                     </filter>
-                    <radialGradient id="city-glow" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="rgba(122,167,255,0.58)" />
-                      <stop offset="100%" stopColor="rgba(122,167,255,0)" />
-                    </radialGradient>
-                    <radialGradient id="origin-glow" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="rgba(166,255,203,0.85)" />
-                      <stop offset="100%" stopColor="rgba(166,255,203,0)" />
-                    </radialGradient>
+                    <linearGradient id="route-gradient" x1="12%" y1="82%" x2="86%" y2="22%">
+                      <stop offset="0%" stopColor="rgba(122,167,255,0.12)" />
+                      <stop offset="42%" stopColor={activeColor} />
+                      <stop offset="100%" stopColor="rgba(244,241,234,0.95)" />
+                    </linearGradient>
                   </defs>
 
                   <g>
-                    {countries.map((country, i) => (
-                      <motion.path
-                        key={country.id}
-                        d={country.d}
-                        fill={country.isLU ? "rgba(122,167,255,0.2)" : "rgba(var(--rgb-fg),0.024)"}
-                        stroke={country.isLU ? "rgba(122,167,255,0.92)" : "rgba(var(--rgb-fg),0.28)"}
-                        strokeWidth={country.isLU ? 1.18 : 0.46}
-                        strokeLinejoin="round"
-                        vectorEffect="non-scaling-stroke"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true, margin: "0px 0px -18% 0px" }}
-                        transition={{ delay: 0.04 + i * 0.018, duration: 0.5 }}
-                      />
-                    ))}
+                    <path
+                      d={routeD}
+                      fill="none"
+                      stroke="rgba(var(--rgb-fg),0.09)"
+                      strokeWidth="34"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <motion.path
+                      d={routeD}
+                      fill="none"
+                      stroke="rgba(var(--rgb-fg),0.18)"
+                      strokeWidth="2"
+                      strokeDasharray="10 16"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ pathLength: draw }}
+                    />
+                    <motion.path
+                      key={activeEvent?.id}
+                      d={routeD}
+                      fill="none"
+                      stroke="url(#route-gradient)"
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      filter="url(#event-route-glow)"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{ pathLength: 1, opacity: 1 }}
+                      transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1] }}
+                    />
 
-                    {roads.map((road) => (
-                      <motion.path
-                        key={road.id}
-                        d={road.d}
-                        fill="none"
-                        stroke={road.kind === "primary" ? "rgba(var(--rgb-fg),0.18)" : "rgba(var(--rgb-fg),0.1)"}
-                        strokeWidth={road.kind === "primary" ? 1.15 : 0.68}
-                        strokeDasharray={road.kind === "primary" ? "0" : "3 5"}
-                        strokeLinecap="round"
-                        vectorEffect="non-scaling-stroke"
-                        style={{ pathLength: draw }}
-                      />
-                    ))}
-
-                    {events.filter((event) => event.id !== activeEventId).map((event, i) => {
-                      const eventIndex = events.findIndex((item) => item.id === event.id);
+                    {routePoints.map((point, i) => {
+                      const isFirst = i === 0;
+                      const isLast = i === routePoints.length - 1;
                       return (
-                        <motion.path
-                          key={event.id}
-                          d={event.d}
-                          fill="none"
-                          stroke={EVENT_COLORS[eventIndex % EVENT_COLORS.length]}
-                          strokeWidth="1"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          vectorEffect="non-scaling-stroke"
-                          style={{ pathLength: draw }}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 0.16 }}
-                          whileInView={{ opacity: 0.24 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: 0.16 + i * 0.05, duration: 0.45 }}
-                        />
-                      );
-                    })}
-
-                    {activeEvent ? (
-                      <motion.path
-                        key={activeEvent.id}
-                        d={activeEvent.d}
-                        fill="none"
-                        stroke={EVENT_COLORS[events.findIndex((event) => event.id === activeEvent.id) % EVENT_COLORS.length]}
-                        strokeWidth="4.6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        vectorEffect="non-scaling-stroke"
-                        filter="url(#event-route-glow)"
-                        style={{ pathLength: 1 }}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-                      />
-                    ) : null}
-
-                    {cities.map((city, i) => {
-                      const event = events.find((item) => item.target === city.key);
-                      const isOrigin = city.key === "luxembourg";
-                      const isActiveTarget = activeEvent?.target === city.key;
-                      return (
-                        <g key={city.key}>
-                          <motion.circle
-                            cx={city.x}
-                            cy={city.y}
-                            r={isOrigin ? 24 : city.event ? 20 : 12}
-                            fill={isOrigin ? "url(#origin-glow)" : "url(#city-glow)"}
-                            initial={{ opacity: 0, scale: 0.5 }}
-                            whileInView={{ opacity: city.event || isOrigin ? 1 : 0.55, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.35 + i * 0.025, duration: 0.55 }}
-                          />
-                          {isActiveTarget ? (
+                        <g key={`${point.x}-${point.y}-${i}`}>
+                          {isLast ? (
                             <motion.circle
-                              cx={city.x}
-                              cy={city.y}
-                              r={8}
+                              cx={point.x}
+                              cy={point.y}
+                              r="34"
                               fill="none"
-                              stroke="rgba(122,167,255,0.8)"
-                              strokeWidth="1.2"
-                              vectorEffect="non-scaling-stroke"
-                              animate={{ scale: [1, 2.4, 2.4], opacity: [0.9, 0, 0] }}
-                              transition={{ duration: 2.1, repeat: Infinity, ease: "easeOut" }}
-                              style={{ transformOrigin: `${city.x}px ${city.y}px` }}
+                              stroke={activeColor}
+                              strokeOpacity="0.22"
+                              strokeWidth="2"
+                              animate={{ scale: [0.84, 1.22, 0.84], opacity: [0.18, 0.5, 0.18] }}
+                              transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+                              style={{ transformOrigin: `${point.x}px ${point.y}px` }}
                             />
                           ) : null}
                           <motion.circle
-                            cx={city.x}
-                            cy={city.y}
-                            r={isActiveTarget ? 4.4 : isOrigin ? 3.8 : city.event ? 3.4 : 2}
-                            fill={isOrigin ? "rgba(166,255,203,1)" : city.event ? "rgba(122,167,255,1)" : "rgba(var(--rgb-fg),0.74)"}
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
+                            cx={point.x}
+                            cy={point.y}
+                            r={isFirst || isLast ? 16 : 10}
+                            fill={isFirst ? "rgba(166,255,203,1)" : isLast ? activeColor : "rgba(var(--rgb-fg),0.72)"}
+                            stroke="rgba(var(--rgb-bg),0.9)"
+                            strokeWidth="5"
+                            initial={{ opacity: 0, scale: 0.6 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
-                            transition={{ delay: 0.45 + i * 0.025, duration: 0.35 }}
+                            transition={{ delay: 0.12 + i * 0.08, duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
                           />
                           <motion.text
-                            x={city.x + 9}
-                            y={city.y + 4}
-                            fill={isOrigin || isActiveTarget ? "rgba(var(--rgb-fg),0.98)" : "rgba(var(--rgb-fg),0.64)"}
-                            fontSize={isOrigin || city.event ? 10.5 : 8.5}
-                            fontWeight={isOrigin || city.event ? 650 : 450}
-                            letterSpacing="0.03em"
-                            initial={{ opacity: 0, x: city.x + 3 }}
-                            whileInView={{ opacity: city.event || isOrigin ? 1 : 0.72, x: city.x + 9 }}
+                            x={point.x}
+                            y={point.y + (isLast ? 46 : -28)}
+                            fill={isFirst || isLast ? "rgba(var(--rgb-fg),0.94)" : "rgba(var(--rgb-fg),0.5)"}
+                            fontSize={isFirst || isLast ? 20 : 14}
+                            fontWeight={isFirst || isLast ? 760 : 560}
+                            textAnchor="middle"
+                            letterSpacing="0.02em"
+                            initial={{ opacity: 0, y: point.y + (isLast ? 36 : -18) }}
+                            whileInView={{ opacity: 1, y: point.y + (isLast ? 46 : -28) }}
                             viewport={{ once: true }}
-                            transition={{ delay: 0.5 + i * 0.025, duration: 0.45 }}
+                            transition={{ delay: 0.22 + i * 0.08, duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
                             style={{ fontFamily: "var(--font-sans)" }}
                           >
-                            {event ? event.location : city.short}
+                            {stopLabels[i]}
                           </motion.text>
                         </g>
                       );
@@ -297,16 +263,25 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                 </motion.svg>
 
                 <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-[rgba(var(--rgb-bg),0.5)] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--color-silver)] backdrop-blur-xl sm:left-6 sm:top-6">
-                  <span className="h-[5px] w-[5px] rounded-full bg-[var(--color-volt)]" />
-                  Carte événements
+                  <span className="h-[5px] w-[5px] rounded-full" style={{ background: activeColor }} />
+                  Itineraire actif
+                </div>
+                <div className="absolute left-4 right-4 top-14 max-w-[360px] rounded-3xl border border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-bg),0.46)] p-4 backdrop-blur-xl sm:left-6 sm:right-auto sm:top-16 sm:p-5">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--color-silver-dim)]">Destination</p>
+                  <p className="mt-2 text-[clamp(1.35rem,3vw,2.45rem)] font-medium leading-[0.98] tracking-[-0.025em] text-[var(--color-bone)]">
+                    {activeEvent?.location ?? "Luxembourg"}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-[var(--color-silver)]">
+                    <span className="rounded-full bg-[rgba(var(--rgb-fg),0.07)] px-3 py-1">{activeEvent?.date}</span>
+                    <span className="rounded-full bg-[rgba(var(--rgb-fg),0.07)] px-3 py-1">{activeEvent?.distance}</span>
+                  </div>
                 </div>
                 <a
                   href={activeEvent?.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="press absolute bottom-4 right-4 inline-flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full bg-[rgba(var(--rgb-bg),0.62)] px-3 py-1 text-[10px] tracking-[0.05em] text-[var(--color-bone)] backdrop-blur tabular sm:bottom-auto sm:right-6 sm:top-6"
+                  className="press absolute bottom-4 right-4 inline-flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full bg-[rgba(var(--rgb-fg),0.92)] px-4 py-2 text-[11px] font-medium tracking-[0.02em] text-[var(--color-ink)] shadow-[0_18px_50px_-24px_rgba(244,241,234,0.72)] backdrop-blur tabular sm:bottom-auto sm:right-6 sm:top-6"
                 >
-                  <span className="led-live h-[5px] w-[5px] rounded-full bg-[var(--color-signal)]" />
                   {activeEvent?.name ?? "Inscription"}
                 </a>
                 <div className="absolute bottom-6 left-6 hidden max-w-[calc(100%-3rem)] flex-wrap gap-1.5 sm:flex">
@@ -331,4 +306,51 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
       </div>
     </section>
   );
+}
+
+function buildRoutePoints(count: number, local: boolean): RoutePoint[] {
+  if (local) {
+    return [
+      { x: 205, y: 420 },
+      { x: 410, y: 310 },
+      { x: 615, y: 405 },
+      { x: 790, y: 305 },
+    ];
+  }
+
+  const base = [
+    { x: 140, y: 470 },
+    { x: 325, y: 390 },
+    { x: 510, y: 280 },
+    { x: 690, y: 210 },
+    { x: 850, y: 295 },
+  ];
+
+  return base.slice(0, Math.max(3, Math.min(count, base.length)));
+}
+
+function buildRoutePath(points: RoutePoint[]) {
+  if (points.length < 2) return "";
+
+  return points.reduce((path, point, index) => {
+    if (index === 0) return `M ${point.x} ${point.y}`;
+
+    const prev = points[index - 1];
+    const cx = (prev.x + point.x) / 2;
+    const cy = Math.min(prev.y, point.y) - 56 + index * 8;
+    return `${path} Q ${cx} ${cy} ${point.x} ${point.y}`;
+  }, "");
+}
+
+function buildStopLabels(destination: string, count: number) {
+  const labels = ["Luxembourg", "Pause", "Route", "Arrivee"];
+  const cleanDestination = destination.split("/")[0]?.trim() || "Destination";
+
+  if (count <= 3) return ["Luxembourg", "Route", cleanDestination];
+
+  return Array.from({ length: count }, (_, i) => {
+    if (i === 0) return "Luxembourg";
+    if (i === count - 1) return cleanDestination;
+    return labels[i] ?? "Route";
+  });
 }

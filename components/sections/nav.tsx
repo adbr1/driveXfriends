@@ -112,17 +112,35 @@ export function Nav() {
       {/* Soft blur strip behind the nav — fades out vertically */}
       <motion.div
         aria-hidden
-        className="pointer-events-none fixed inset-x-0 top-0 z-[55] h-[110px]"
+        className="pointer-events-none fixed inset-x-0 top-0 z-[55] h-[120px] md:h-[110px]"
         initial={{ opacity: 0 }}
         animate={{ opacity: visible ? 1 : 0 }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         style={{
-          backdropFilter: "blur(10px) saturate(120%)",
-          WebkitBackdropFilter: "blur(10px) saturate(120%)",
-          background: "linear-gradient(180deg, rgba(var(--rgb-bg),0.45) 0%, rgba(var(--rgb-bg),0.18) 55%, transparent 100%)",
+          backdropFilter: "blur(18px) saturate(130%)",
+          WebkitBackdropFilter: "blur(18px) saturate(130%)",
+          background: "linear-gradient(180deg, rgba(var(--rgb-bg),0.72) 0%, rgba(var(--rgb-bg),0.38) 62%, transparent 100%)",
           maskImage: "linear-gradient(180deg, #000 0%, #000 60%, transparent 100%)",
           WebkitMaskImage: "linear-gradient(180deg, #000 0%, #000 60%, transparent 100%)",
         }}
+      />
+
+      <motion.div
+        aria-hidden
+        className="fixed inset-0 z-[58] md:hidden"
+        initial={false}
+        animate={{
+          opacity: open && visible ? 1 : 0,
+          pointerEvents: open && visible ? "auto" : "none",
+        }}
+        transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          backdropFilter: "blur(34px) saturate(150%)",
+          WebkitBackdropFilter: "blur(34px) saturate(150%)",
+          background:
+            "linear-gradient(180deg, rgba(var(--rgb-bg),0.68), rgba(var(--rgb-bg),0.48) 48%, rgba(var(--rgb-bg),0.72))",
+        }}
+        onClick={() => setOpen(false)}
       />
 
       <motion.div
@@ -159,24 +177,6 @@ export function Nav() {
             filter: "blur(18px)",
           }}
         />
-        <motion.div
-          aria-hidden
-          className="fixed inset-0 z-[-1] md:hidden"
-          initial={false}
-          animate={{
-            opacity: open && visible ? 1 : 0,
-            backdropFilter: open && visible ? "blur(30px) saturate(135%)" : "blur(0px)",
-            WebkitBackdropFilter: open && visible ? "blur(30px) saturate(135%)" : "blur(0px)",
-            pointerEvents: open && visible ? "auto" : "none",
-          }}
-          transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(var(--rgb-bg),0.34), rgba(var(--rgb-bg),0.18) 48%, rgba(var(--rgb-bg),0.4))",
-          }}
-          onClick={() => setOpen(false)}
-        />
-
         <div className="relative flex items-center gap-2 rounded-full bg-[rgba(var(--rgb-bg),0.34)] p-1.5 shadow-[0_18px_60px_-28px_rgba(0,0,0,0.9)] backdrop-blur-xl md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0">
           <motion.a
             variants={navItem}
@@ -268,7 +268,7 @@ export function Nav() {
             className="border-soft rounded-[28px] border border-[rgba(var(--rgb-fg),0.16)] p-2 shadow-[0_34px_110px_-32px_rgba(0,0,0,0.96)]"
             style={{
               background:
-                "linear-gradient(180deg, rgba(var(--rgb-bg),0.46), rgba(var(--rgb-bg),0.24)), rgba(122,167,255,0.08)",
+                "linear-gradient(180deg, rgba(var(--rgb-bg),0.74), rgba(var(--rgb-bg),0.52)), rgba(122,167,255,0.08)",
               backdropFilter: "blur(46px) saturate(170%) contrast(1.08)",
               WebkitBackdropFilter: "blur(46px) saturate(170%) contrast(1.08)",
             }}

@@ -102,9 +102,35 @@ export function ChapterPrologue() {
             className="hero-background-placeholder absolute inset-0"
             style={{
               background:
-                "linear-gradient(120deg, rgba(122,167,255,0.12), transparent 32%), radial-gradient(ellipse at 72% 28%, rgba(var(--rgb-fg),0.1), transparent 36%), linear-gradient(180deg, rgba(var(--rgb-bg),0.06), rgba(var(--rgb-bg),0.82)), url(\"data:image/svg+xml,%3Csvg width='1400' height='900' viewBox='0 0 1400 900' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1400' height='900' fill='%23050505'/%3E%3Cg opacity='0.26' stroke='%23f4f1ea' stroke-width='1' fill='none'%3E%3Cpath d='M-80 690 C220 520 420 540 650 360 C900 160 1110 160 1500 40'/%3E%3Cpath d='M-120 760 C250 620 460 650 720 470 C960 305 1110 285 1500 210' opacity='0.55'/%3E%3Cpath d='M-120 340 C200 280 430 315 690 250 C940 190 1110 125 1500 130' opacity='0.32'/%3E%3C/g%3E%3Cg opacity='0.12' stroke='%237aa7ff' stroke-width='8' fill='none'%3E%3Cpath d='M-100 705 C220 520 430 550 650 365 C900 155 1110 160 1510 42'/%3E%3C/g%3E%3C/svg%3E\")",
+                "linear-gradient(90deg, rgba(var(--rgb-bg),0.92) 0%, rgba(var(--rgb-bg),0.54) 45%, rgba(var(--rgb-bg),0.22) 100%), linear-gradient(180deg, rgba(var(--rgb-bg),0.18) 0%, transparent 45%, rgba(var(--rgb-bg),0.92) 100%), url('/images/hero-background.jpg'), radial-gradient(ellipse at 72% 54%, rgba(244,241,234,0.18) 0%, rgba(244,241,234,0.05) 24%, transparent 48%), linear-gradient(112deg, #050505 0%, #090a0b 42%, #151516 100%)",
               backgroundSize: "cover",
               backgroundPosition: "center",
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute bottom-[12%] right-[-8%] h-[28%] w-[64%] opacity-70 blur-[1px] sm:bottom-[9%] sm:right-[-5%] sm:h-[34%] sm:w-[58%]"
+            style={{
+              clipPath: "polygon(4% 58%, 16% 34%, 38% 20%, 72% 22%, 92% 42%, 98% 67%, 84% 76%, 18% 78%)",
+              background:
+                "linear-gradient(180deg, rgba(244,241,234,0.16), rgba(244,241,234,0.035) 42%, rgba(0,0,0,0.08)), linear-gradient(90deg, rgba(122,167,255,0.08), transparent 34%)",
+              border: "1px solid rgba(var(--rgb-fg),0.08)",
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute bottom-[9%] right-[9%] h-[9vw] max-h-[82px] min-h-[44px] w-[9vw] min-w-[44px] max-w-[82px] rounded-full opacity-55"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(var(--rgb-bg),0.92) 0 36%, rgba(244,241,234,0.2) 38% 43%, rgba(var(--rgb-bg),0.72) 45% 58%, transparent 60%)",
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute bottom-[9%] right-[42%] h-[8vw] max-h-[74px] min-h-[38px] w-[8vw] min-w-[38px] max-w-[74px] rounded-full opacity-42"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(var(--rgb-bg),0.92) 0 36%, rgba(244,241,234,0.18) 38% 43%, rgba(var(--rgb-bg),0.72) 45% 58%, transparent 60%)",
             }}
           />
           <div
@@ -289,7 +315,7 @@ export function ChapterPrologue() {
               scale: { duration: 0.95, ease: [0.16, 1, 0.3, 1] },
               layout: { duration: 1.4, ease: [0.16, 1, 0.3, 1] },
             }}
-            className="font-sans font-black uppercase leading-[0.78] tracking-[-0.08em]"
+            className="font-sans font-black uppercase leading-[0.82]"
             style={{
               fontSize: intro
                 ? "clamp(3.2rem, 12vw, 8rem)"
@@ -297,8 +323,8 @@ export function ChapterPrologue() {
               textAlign: intro ? "center" : "left",
               fontFamily: "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif",
               fontWeight: 900,
-              lineHeight: 0.78,
-              letterSpacing: "-0.08em",
+              lineHeight: 0.82,
+              letterSpacing: "-0.025em",
               textTransform: "uppercase",
               maxWidth: "min(100%, 11ch)",
             }}

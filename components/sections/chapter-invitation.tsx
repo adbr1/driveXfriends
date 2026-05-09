@@ -148,10 +148,10 @@ function Pass() {
           style={{
             background:
               "conic-gradient(from 0deg at 50% 50%, rgba(122,167,255,0.0), rgba(122,167,255,0.45) 25%, rgba(var(--rgb-fg),0.45) 50%, rgba(166,255,203,0.3) 75%, rgba(122,167,255,0.0))",
-            filter: "blur(48px)",
+            filter: isTouch ? "none" : "blur(48px)",
             mixBlendMode: "screen",
           }}
-          animate={reduced ? {} : { rotate: 360 }}
+          animate={reduced || isTouch ? {} : { rotate: 360 }}
           transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
         />
 
@@ -196,7 +196,7 @@ function Pass() {
               <motion.div
                 aria-hidden
                 className="absolute -inset-3 rounded-full border border-dashed border-[rgba(122,167,255,0.35)]"
-                animate={reduced ? {} : { rotate: 360 }}
+                animate={reduced || isTouch ? {} : { rotate: 360 }}
                 transition={{ duration: 32, repeat: Infinity, ease: "linear" }}
               />
             </div>
@@ -239,7 +239,7 @@ function Pass() {
         className="mx-auto mt-3 h-16 w-[88%] opacity-40"
         style={{
           background: "radial-gradient(ellipse at center top, rgba(var(--rgb-fg),0.22), transparent 75%)",
-          filter: "blur(10px)",
+          filter: isTouch ? "none" : "blur(10px)",
         }}
       />
     </motion.div>

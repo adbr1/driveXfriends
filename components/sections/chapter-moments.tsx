@@ -61,6 +61,7 @@ export function ChapterMoments() {
                     alt={g.image.alt}
                     className="absolute inset-0 h-full w-full object-cover opacity-80 grayscale transition duration-700 group-hover:scale-[1.04] group-hover:opacity-95 group-hover:grayscale-0"
                     loading="lazy"
+                    decoding="async"
                   />
                   <div
                     aria-hidden

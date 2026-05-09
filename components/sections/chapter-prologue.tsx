@@ -2,11 +2,11 @@
 
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { brand, hero, manifesto } from "@/lib/content";
 import { MagneticButton } from "@/components/primitives/magnetic-button";
 import { MotionText } from "@/components/primitives/motion-text";
-import { usePrefersReducedMotion } from "@/lib/hooks";
+import { useIsTouch, usePrefersReducedMotion } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 const HeroCanvas = dynamic(() => import("@/components/scenes/hero-canvas"), {
@@ -25,17 +25,24 @@ const HeroCanvas = dynamic(() => import("@/components/scenes/hero-canvas"), {
 
 const SESSION_KEY = "dxf-prologue-played";
 const INTRO_COMPLETE_EVENT = "dxf:intro-complete";
-const INTRO_EXIT_AT = 3300;
-const INTRO_EXIT_DURATION = 1250;
+const INTRO_EXIT_AT = 2400;
+const INTRO_EXIT_DURATION = 900;
 
-const INTRO_LINE_1 = "DRIVE X".split("");
-const INTRO_LINE_2 = "FRIENDS".split("");
-const LETTER_DELAY = 0.035;
-const LETTER_START = 1.55; // timing of letter rain start (after flash)
+const INTRO_LINE_1 = "DRIVE X";
+const INTRO_LINE_2 = "FRIENDS";
+const TITLE_START = 0.56;
 
 export function ChapterPrologue() {
   const reduced = usePrefersReducedMotion();
+  const isTouch = useIsTouch();
+  const [startsSettled, setStartsSettled] = useState(false);
   const [phase, setPhase] = useState<"intro" | "exiting" | "settled">("intro");
+
+  useLayoutEffect(() => {
+    if (sessionStorage.getItem(SESSION_KEY) !== "1") return;
+    setStartsSettled(true);
+    setPhase("settled");
+  }, []);
 
   useEffect(() => {
     const played = sessionStorage.getItem(SESSION_KEY);
@@ -47,6 +54,7 @@ export function ChapterPrologue() {
 
   useEffect(() => {
     if (phase !== "intro") return;
+    if (sessionStorage.getItem(SESSION_KEY) === "1") return;
     document.body.classList.add("no-scroll");
     const exitTimer = window.setTimeout(() => {
       setPhase("exiting");
@@ -166,7 +174,7 @@ export function ChapterPrologue() {
         <motion.div
           className="absolute inset-0 z-[3]"
           animate={
-            intro
+            intro && !isTouch && !reduced
               ? { x: [0, -3, 2, -2, 1, 0], y: [0, 2, -2, 1, -1, 0] }
               : { x: 0, y: 0 }
           }
@@ -174,7 +182,7 @@ export function ChapterPrologue() {
         >
           {/* Radial perspective burst — only intro */}
           <AnimatePresence>
-            {intro ? (
+            {intro && !isTouch && !reduced ? (
               <motion.div
                 key="radial"
                 aria-hidden
@@ -188,7 +196,7 @@ export function ChapterPrologue() {
 
           {/* Speed streaks */}
           <AnimatePresence>
-            {intro ? (
+            {intro && !isTouch && !reduced ? (
               <motion.div
                 key="streaks"
                 aria-hidden
@@ -208,11 +216,11 @@ export function ChapterPrologue() {
                 aria-hidden
                 className="absolute inset-0 bg-white"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 0, 0.55, 0.15, 0] }}
+                animate={{ opacity: isTouch ? [0, 0.22, 0] : [0, 0, 0.45, 0.1, 0] }}
                 exit={{ opacity: 0 }}
                 transition={{
-                  duration: 1.9,
-                  times: [0, 0.78, 0.86, 0.92, 1],
+                  duration: isTouch ? 0.62 : 1.3,
+                  times: isTouch ? [0, 0.45, 1] : [0, 0.7, 0.82, 0.9, 1],
                   ease: "easeOut",
                 }}
               />
@@ -221,7 +229,7 @@ export function ChapterPrologue() {
 
           {/* Center horizontal hairline that emerges with the title and lingers */}
           <AnimatePresence>
-            {intro ? (
+            {intro && !isTouch && !reduced ? (
               <motion.div
                 key="centerline"
                 aria-hidden
@@ -237,8 +245,8 @@ export function ChapterPrologue() {
                 animate={{ scaleX: 1, opacity: 1 }}
                 exit={{ scaleX: 0, opacity: 0, transition: { duration: 0.8, ease: [0.65, 0, 0.05, 1] } }}
                 transition={{
-                  scaleX: { delay: LETTER_START - 0.05, duration: 1.0, ease: [0.16, 1, 0.3, 1] },
-                  opacity: { delay: LETTER_START - 0.05, duration: 0.4 },
+                  scaleX: { delay: TITLE_START + 0.05, duration: 0.65, ease: [0.16, 1, 0.3, 1] },
+                  opacity: { delay: TITLE_START + 0.05, duration: 0.3 },
                 }}
               />
             ) : null}
@@ -283,7 +291,8 @@ export function ChapterPrologue() {
         {/* Layout-morph container */}
         <div
           className={cn(
-            "absolute inset-0 z-[5] mx-auto flex max-w-[1440px] flex-col px-[var(--gutter)] transition-[justify-content,align-items,padding] duration-[1400ms]",
+            "absolute inset-0 z-[5] mx-auto flex max-w-[1440px] flex-col px-[var(--gutter)]",
+            !startsSettled && "transition-[justify-content,align-items,padding] duration-[900ms]",
             intro
               ? "items-center justify-center"
               : "items-start justify-end pt-[96px] pb-[clamp(2rem,7vh,7rem)] sm:pt-[120px]",
@@ -301,26 +310,26 @@ export function ChapterPrologue() {
             justifyContent: intro ? "center" : "flex-end",
             paddingTop: intro ? undefined : "96px",
             paddingBottom: intro ? undefined : "clamp(2rem, 7vh, 7rem)",
-            transition: "justify-content 1400ms var(--ease-cinema), align-items 1400ms var(--ease-cinema), padding 1400ms var(--ease-cinema)",
+            transition: startsSettled
+              ? undefined
+              : "justify-content 900ms var(--ease-cinema), align-items 900ms var(--ease-cinema), padding 900ms var(--ease-cinema)",
           }}
         >
           {/* Title — letters rain in */}
           <motion.h1
             id="prologue-title"
-            layout
-            initial={intro ? false : { opacity: 0, y: 22, filter: "blur(14px)", scale: 0.985 }}
+            layout={!startsSettled}
+            initial={intro ? false : { opacity: 0, y: startsSettled ? 10 : 18, scale: 0.992 }}
             animate={{
               opacity: 1,
               y: exiting ? -4 : 0,
-              filter: "blur(0px)",
               scale: 1,
             }}
             transition={{
-              opacity: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
-              y: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
-              filter: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
-              scale: { duration: 0.95, ease: [0.16, 1, 0.3, 1] },
-              layout: { duration: 1.4, ease: [0.16, 1, 0.3, 1] },
+              opacity: { duration: startsSettled ? 0.45 : 0.72, ease: [0.16, 1, 0.3, 1] },
+              y: { duration: startsSettled ? 0.45 : 0.72, ease: [0.16, 1, 0.3, 1] },
+              scale: { duration: startsSettled ? 0.55 : 0.85, ease: [0.16, 1, 0.3, 1] },
+              layout: { duration: 0.9, ease: [0.16, 1, 0.3, 1] },
             }}
             className="font-sans font-black uppercase leading-[0.82]"
             style={{
@@ -338,23 +347,8 @@ export function ChapterPrologue() {
           >
             <span className="sr-only">{brand.name}</span>
 
-            <span aria-hidden className="block whitespace-nowrap">
-              {INTRO_LINE_1.map((c, i) => (
-                <RainLetter key={`d-${i}`} char={c} index={i} reduced={reduced} active={intro} gap={c === " "} />
-              ))}
-            </span>
-
-            <span aria-hidden className="block whitespace-nowrap">
-              {INTRO_LINE_2.map((c, i) => (
-                <RainLetter
-                  key={`f-${i}`}
-                  char={c}
-                  index={INTRO_LINE_1.length + i}
-                  reduced={reduced}
-                  active={intro}
-                />
-              ))}
-            </span>
+            <IntroTitleLine text={INTRO_LINE_1} active={intro} reduced={reduced} delay={TITLE_START} />
+            <IntroTitleLine text={INTRO_LINE_2} active={intro} reduced={reduced} delay={TITLE_START + 0.12} />
           </motion.h1>
 
           {/* Subtitle + CTAs */}
@@ -363,10 +357,10 @@ export function ChapterPrologue() {
               <motion.div
                 key="hero-extras"
                 className="mt-8 flex w-full flex-col gap-6 md:mt-12 md:flex-row md:items-end md:justify-between md:gap-8"
-                initial={{ opacity: 0, y: 16, filter: "blur(8px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                initial={{ opacity: 0, y: startsSettled ? 8 : 14 }}
+                animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ delay: 0.5, duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ delay: startsSettled ? 0.08 : 0.38, duration: startsSettled ? 0.48 : 0.78, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className="max-w-md">
                   <p className="text-[15px] leading-[1.6] text-[var(--color-bone)] sm:text-[17px]">{hero.subtitle}</p>
@@ -531,68 +525,49 @@ export function ChapterPrologue() {
   );
 }
 
-function RainLetter({
-  char,
-  index,
-  reduced,
+function IntroTitleLine({
+  text,
   active,
-  small,
-  silver,
-  gap,
+  reduced,
+  delay,
 }: {
-  char: string;
-  index: number;
-  reduced: boolean;
+  text: string;
   active: boolean;
-  small?: boolean;
-  silver?: boolean;
-  gap?: boolean;
+  reduced: boolean;
+  delay: number;
 }) {
-  if (gap) return <span aria-hidden className="inline-block w-[0.22em]" />;
-
-  const letterStyle = {
-    fontSize: small ? "0.78em" : undefined,
-    ...(silver
-      ? { color: "var(--color-silver)" }
-      : {
-          backgroundImage:
-            "linear-gradient(180deg, rgba(var(--rgb-fg),1) 0%, rgba(var(--rgb-fg),0.95) 40%, rgba(var(--rgb-fg),0.55) 100%)",
-          WebkitBackgroundClip: "text",
-          backgroundClip: "text",
-          color: "transparent",
-        }),
+  const textStyle = {
+    backgroundImage:
+      "linear-gradient(180deg, rgba(var(--rgb-fg),1) 0%, rgba(var(--rgb-fg),0.96) 48%, rgba(var(--rgb-fg),0.68) 100%)",
+    WebkitBackgroundClip: "text",
+    backgroundClip: "text",
+    color: "transparent",
   };
 
   if (!active) {
     return (
-      <span className="inline-block" style={letterStyle}>
-        {char}
+      <span aria-hidden className="block whitespace-nowrap" style={textStyle}>
+        {text}
       </span>
     );
   }
 
   return (
-    <motion.span
-      className="inline-block"
-      style={letterStyle}
-      initial={{
-        y: -140,
-        opacity: 0,
-        filter: "blur(14px)",
-        rotate: index % 2 === 0 ? -7 : 7,
-        scale: 1.18,
-      }}
-      animate={{ y: 0, opacity: 1, filter: "blur(0px)", rotate: 0, scale: 1 }}
-      transition={{
-        delay: reduced ? 0 : LETTER_START + index * LETTER_DELAY,
-        type: "spring",
-        stiffness: 220,
-        damping: 14,
-        mass: 0.85,
-      }}
-    >
-      {char}
-    </motion.span>
+    <span aria-hidden className="block overflow-hidden whitespace-nowrap">
+      <motion.span
+        className="block"
+        style={textStyle}
+        initial={{ y: "105%", opacity: 0, scale: 0.985 }}
+        animate={{ y: "0%", opacity: 1, scale: 1 }}
+        transition={{
+          delay: reduced ? 0 : delay,
+          duration: reduced ? 0.01 : 0.78,
+          ease: [0.16, 1, 0.3, 1],
+        }}
+      >
+        {text}
+      </motion.span>
+    </span>
   );
 }
 

@@ -17,23 +17,11 @@ export function Interstitial({ roman, eyebrow, title, subtitle }: Props) {
   // The text scales in, peaks at mid, then fades out — a "moment held"
   const opacity = useTransform(scrollYProgress, [0, 0.25, 0.55, 0.85], [0, 1, 1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.4, 0.7, 1], [0.92, 1, 1.02, 1.08]);
-  const blur = useTransform(scrollYProgress, [0, 0.25, 0.6, 1], [10, 0, 0, 8]);
-  const lineScale = useTransform(scrollYProgress, [0.05, 0.5], [0, 1]);
   const eyebrowY = useTransform(scrollYProgress, [0, 0.3], [16, 0]);
 
   return (
     <div ref={ref} aria-hidden className="relative h-[130vh] md:h-[180vh]">
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
-        <motion.div
-          className="absolute left-0 right-0 top-1/2 h-[1px]"
-          style={{
-            scaleX: lineScale,
-            transformOrigin: "left",
-            background: "linear-gradient(90deg, transparent, rgba(var(--rgb-fg),0.65), transparent)",
-            boxShadow: "0 0 32px rgba(var(--rgb-fg),0.35)",
-          }}
-        />
-
         <motion.div
           className="relative flex flex-col items-center gap-5 px-[var(--gutter)] text-center sm:gap-6"
           style={{ opacity }}
@@ -50,7 +38,6 @@ export function Interstitial({ roman, eyebrow, title, subtitle }: Props) {
             style={{
               fontSize: "clamp(2.7rem, 15vw, 11rem)",
               scale,
-              filter: useTransform(blur, (b) => `blur(${b}px)`),
             }}
           >
             {title}

@@ -20,9 +20,9 @@
   --radius-pill: 999px;
 }
 
-/* ---------- Theme tokens (auto: prefers-color-scheme) ---------- */
+/* ---------- Theme tokens ---------- */
 :root {
-  color-scheme: dark light;
+  color-scheme: dark;
 
   /* DARK is the default */
   --bg: #050505;
@@ -49,29 +49,6 @@
 
   --max-w: 1440px;
   --gutter: clamp(1.25rem, 4vw, 3rem);
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f1ede4;
-    --fg: #0a0a0c;
-    --surface-1: #e8e2d4;
-    --surface-2: #ddd6c5;
-    --muted: #4f5560;
-    --muted-2: #8a8e98;
-
-    --rgb-fg: 10, 10, 12;
-    --rgb-bg: 241, 237, 228;
-
-    --grain-opacity: 0.05;
-    --grain-blend: multiply;
-    --halo-strength: 0.12;
-    --bg-glow-1: rgba(122, 167, 255, 0.10);
-    --bg-glow-2: rgba(60, 60, 70, 0.06);
-    --canvas-bg: #f1ede4;
-    --canvas-emissive: 0.18;
-    --gallery-veil: 0.04;
-  }
 }
 
 * {
@@ -265,10 +242,46 @@ a {
 }
 
 .text-grad {
-  background: linear-gradient(180deg, rgba(var(--rgb-fg), 1) 0%, rgba(var(--rgb-fg), 0.95) 40%, rgba(var(--rgb-fg), 0.55) 100%);
+  background: linear-gradient(180deg, rgba(var(--rgb-fg), 1) 0%, rgba(var(--rgb-fg), 0.96) 46%, rgba(var(--rgb-fg), 0.68) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 767px) {
+  body::before {
+    display: none;
+  }
+
+  body::after {
+    opacity: 0.55;
+  }
+
+  .surface-soft,
+  .surface-elevated {
+    background:
+      linear-gradient(180deg, rgba(var(--rgb-fg), 0.07), rgba(var(--rgb-fg), 0.025)),
+      rgba(var(--rgb-bg), 0.72);
+    backdrop-filter: blur(10px) saturate(125%);
+    -webkit-backdrop-filter: blur(10px) saturate(125%);
+  }
+
+  .backdrop-blur,
+  .backdrop-blur-xl {
+    backdrop-filter: blur(10px) saturate(125%);
+    -webkit-backdrop-filter: blur(10px) saturate(125%);
+  }
+
+  .text-grad {
+    background: linear-gradient(180deg, rgba(var(--rgb-fg), 1) 0%, rgba(var(--rgb-fg), 0.96) 58%, rgba(var(--rgb-fg), 0.76) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .led-live {
+    animation: none;
+    box-shadow: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

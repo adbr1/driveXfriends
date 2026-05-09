@@ -19,21 +19,23 @@ export function usePrefersReducedMotion(): boolean {
 export function useIsTouch(): boolean {
   const [isTouch, setIsTouch] = useState(false);
   useEffect(() => {
-    setIsTouch(window.matchMedia("(hover: none), (pointer: coarse)").matches);
+    const mql = window.matchMedia("(hover: none), (pointer: coarse)");
+    const update = () => {
+      document.documentElement.classList.toggle("is-touch", mql.matches);
+      setIsTouch(mql.matches);
+    };
+    update();
+    mql.addEventListener("change", update);
+    return () => {
+      mql.removeEventListener("change", update);
+      document.documentElement.classList.remove("is-touch");
+    };
   }, []);
   return isTouch;
 }
 
 export function usePrefersColorScheme(): "light" | "dark" {
-  const [scheme, setScheme] = useState<"light" | "dark">("dark");
-  useEffect(() => {
-    const mql = window.matchMedia("(prefers-color-scheme: light)");
-    setScheme(mql.matches ? "light" : "dark");
-    const onChange = (e: MediaQueryListEvent) => setScheme(e.matches ? "light" : "dark");
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-  return scheme;
+  return "dark";
 }
 
 export function useMounted(): boolean {

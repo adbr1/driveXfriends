@@ -9,12 +9,16 @@ export function SmoothScroll() {
 
   useEffect(() => {
     if (reduced) return;
+    const coarse = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (coarse || ios) return;
+
     const lenis = new Lenis({
       duration: 1.15,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 1,
-      touchMultiplier: 1.4,
+      touchMultiplier: 1,
     });
 
     document.documentElement.classList.add("lenis-smooth");

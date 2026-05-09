@@ -114,6 +114,7 @@ function Visual({ image, hover }: { image: { src: string; alt: string }; hover: 
         alt={image.alt}
         className="h-full w-full object-cover opacity-75 grayscale transition duration-700 group-hover:scale-[1.04] group-hover:opacity-90 group-hover:grayscale-0"
         loading="lazy"
+        decoding="async"
       />
       <div
         aria-hidden

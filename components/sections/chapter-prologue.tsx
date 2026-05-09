@@ -409,10 +409,10 @@ export function ChapterPrologue() {
       </div>
 
       {/* MANIFESTE */}
-      <div className="relative z-[5] overflow-hidden py-[clamp(4.5rem,14vh,12rem)]">
+      <div className="relative z-[5] overflow-hidden py-[clamp(4.5rem,14vh,12rem)] max-md:py-20">
         <motion.div
           aria-hidden
-          className="pointer-events-none absolute left-[-12vw] right-[-12vw] top-[6%] h-[72%]"
+          className="pointer-events-none absolute left-[-12vw] right-[-12vw] top-[6%] hidden h-[72%] md:block"
           style={{ y: manifestoLineY, opacity: manifestoGlow }}
         >
           <motion.svg
@@ -467,7 +467,7 @@ export function ChapterPrologue() {
         </motion.div>
         <motion.div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-[18%] h-[22rem] w-[22rem] -translate-x-1/2 rounded-full"
+          className="pointer-events-none absolute left-1/2 top-[18%] hidden h-[22rem] w-[22rem] -translate-x-1/2 rounded-full md:block"
           initial={{ opacity: 0, scale: 0.72 }}
           whileInView={{ opacity: 0.16, scale: 1 }}
           viewport={{ once: true, margin: "0px 0px -18% 0px" }}
@@ -480,7 +480,7 @@ export function ChapterPrologue() {
         <div className="mx-auto max-w-[1440px] px-[var(--gutter)]">
           <div className="relative grid grid-cols-12 gap-x-6 gap-y-12">
             <div className="col-span-12 md:col-span-3">
-              <div className="sticky top-[110px] flex flex-col gap-3">
+              <div className="flex flex-col gap-3 md:sticky md:top-[110px]">
                 <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[rgba(var(--rgb-fg),0.05)] px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[var(--color-silver)]">
                   <span className="h-[5px] w-[5px] rounded-full bg-[var(--color-volt)]" />
                   {manifesto.eyebrow}
@@ -495,12 +495,13 @@ export function ChapterPrologue() {
               >
                 <SplitTitle text={manifesto.title} />
               </h2>
-              <div className="mt-8 max-w-[58ch] text-[clamp(1rem,1.6vw,1.5rem)] leading-[1.6] sm:mt-12">
+              <div className="mt-8 max-w-[58ch] text-[clamp(1rem,1.6vw,1.5rem)] leading-[1.65] sm:mt-12 max-md:text-[15px]">
                 <MotionText
                   text={manifesto.body}
                   highlights={manifesto.highlights}
                   stagger={0.012}
                   duration={0.65}
+                  staticOnTouch
                 />
               </div>
               <div className="mt-10 flex flex-wrap gap-2 sm:mt-16">

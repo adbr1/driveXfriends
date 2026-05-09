@@ -120,7 +120,7 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
 
             <SequenceItem className="relative col-span-12 lg:col-span-7" ref={mapRef}>
               <div
-                className="relative min-h-[420px] w-full overflow-hidden rounded-[24px] border border-[rgba(var(--rgb-fg),0.12)] bg-[rgba(var(--rgb-fg),0.035)] shadow-[0_34px_120px_-70px_rgba(0,0,0,0.95)] backdrop-blur-xl sm:rounded-[36px]"
+                className="relative min-h-[500px] w-full overflow-hidden rounded-[24px] border border-[rgba(var(--rgb-fg),0.12)] bg-[rgba(var(--rgb-fg),0.035)] shadow-[0_34px_120px_-70px_rgba(0,0,0,0.95)] backdrop-blur-xl sm:min-h-[420px] sm:rounded-[36px]"
                 style={{ aspectRatio: `${viewBox.w} / ${viewBox.h}` }}
               >
                 <div
@@ -134,7 +134,7 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                 <motion.svg
                   key={activeEvent?.id}
                   viewBox={mapViewBox}
-                  className="absolute inset-0 h-full w-full"
+                  className="absolute bottom-[76px] left-3 right-3 top-[178px] h-auto w-auto sm:inset-0 sm:h-full sm:w-full lg:bottom-8 lg:left-[36%] lg:right-5 lg:top-8 lg:h-auto lg:w-auto"
                   preserveAspectRatio="xMidYMid meet"
                   aria-hidden
                   initial={{ opacity: 0, scale: 1.025 }}
@@ -259,11 +259,11 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                   </g>
                 </motion.svg>
 
-                <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-[rgba(var(--rgb-bg),0.5)] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--color-silver)] backdrop-blur-xl sm:left-6 sm:top-6">
+                <div className="absolute left-4 top-4 z-[2] inline-flex items-center gap-2 rounded-full bg-[rgba(var(--rgb-bg),0.68)] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--color-silver)] backdrop-blur-xl sm:left-6 sm:top-6">
                   <span className="h-[5px] w-[5px] rounded-full" style={{ background: activeColor }} />
                   Itineraire actif
                 </div>
-                <div className="absolute left-4 right-4 top-14 max-w-[360px] rounded-3xl border border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-bg),0.46)] p-4 backdrop-blur-xl sm:left-6 sm:right-auto sm:top-16 sm:p-5">
+                <div className="absolute left-4 right-4 top-14 z-[2] rounded-3xl border border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-bg),0.78)] p-4 backdrop-blur-xl sm:left-6 sm:right-auto sm:top-16 sm:max-w-[360px] sm:p-5 lg:bg-[rgba(var(--rgb-bg),0.56)]">
                   <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--color-silver-dim)]">Destination</p>
                   <p className="mt-2 text-[clamp(1.35rem,3vw,2.45rem)] font-medium leading-[0.98] tracking-[-0.025em] text-[var(--color-bone)]">
                     {activeEvent?.location ?? "Luxembourg"}
@@ -277,7 +277,7 @@ export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
                   href={activeEvent?.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="press absolute bottom-4 right-4 inline-flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full bg-[rgba(var(--rgb-fg),0.92)] px-4 py-2 text-[11px] font-medium tracking-[0.02em] text-[var(--color-ink)] shadow-[0_18px_50px_-24px_rgba(244,241,234,0.72)] backdrop-blur tabular sm:bottom-auto sm:right-6 sm:top-6"
+                  className="press absolute bottom-4 right-4 z-[2] inline-flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full bg-[rgba(var(--rgb-fg),0.92)] px-4 py-2 text-[11px] font-medium tracking-[0.02em] text-[var(--color-ink)] shadow-[0_18px_50px_-24px_rgba(244,241,234,0.72)] backdrop-blur tabular sm:bottom-auto sm:right-6 sm:top-6"
                 >
                   {activeEvent?.name ?? "Inscription"}
                 </a>

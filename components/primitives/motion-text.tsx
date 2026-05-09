@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
+import { useIsTouch } from "@/lib/hooks";
 
 type Props = {
   text: string;
@@ -11,6 +12,7 @@ type Props = {
   stagger?: number;
   duration?: number;
   as?: "h1" | "h2" | "h3" | "p" | "span";
+  staticOnTouch?: boolean;
 };
 
 export function MotionText({
@@ -21,12 +23,35 @@ export function MotionText({
   stagger = 0.025,
   duration = 0.7,
   as = "p",
+  staticOnTouch = false,
 }: Props) {
+  const isTouch = useIsTouch();
   const words = text.split(/(\s+)/);
   const norm = (w: string) => w.toLowerCase().replace(/[.,;:!?'"()]/g, "");
   const isHighlight = (w: string) => highlights.some((h) => norm(w) === h.toLowerCase());
 
   const Wrapper = motion[as] as typeof motion.p;
+
+  if (staticOnTouch && isTouch) {
+    return (
+      <Wrapper className={className} style={style}>
+        {words.map((word, i) => {
+          if (/^\s+$/.test(word)) return <span key={i}>{word}</span>;
+          return (
+            <span
+              key={i}
+              style={{
+                color: isHighlight(word) ? "var(--color-bone)" : "rgba(184,192,204,0.72)",
+                fontWeight: isHighlight(word) ? 620 : 400,
+              }}
+            >
+              {word}
+            </span>
+          );
+        })}
+      </Wrapper>
+    );
+  }
 
   return (
     <Wrapper

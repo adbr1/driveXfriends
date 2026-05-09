@@ -501,7 +501,6 @@ export function ChapterPrologue() {
                   highlights={manifesto.highlights}
                   stagger={0.012}
                   duration={0.65}
-                  staticOnTouch
                 />
               </div>
               <div className="mt-10 flex flex-wrap gap-2 sm:mt-16">

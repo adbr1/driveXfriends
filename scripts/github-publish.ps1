@@ -1,3 +1,8 @@
+param(
+  [string]$RepoName = "driveXfriends",
+  [switch]$SkipCreate
+)
+
 $ErrorActionPreference = "Stop"
 
 function Load-DotEnvLocal([string]$Path) {
@@ -10,7 +15,7 @@ function Load-DotEnvLocal([string]$Path) {
     if ($idx -lt 1) { return }
     $key = $line.Substring(0, $idx).Trim()
     $val = $line.Substring($idx + 1).Trim()
-    if ($val.StartsWith("\"") -and $val.EndsWith("\"") -and $val.Length -ge 2) {
+    if ($val.StartsWith('"') -and $val.EndsWith('"') -and $val.Length -ge 2) {
       $val = $val.Substring(1, $val.Length - 2)
     }
     Set-Item -Path ("Env:\" + $key) -Value $val
@@ -52,16 +57,15 @@ function Ensure-RemoteOrigin([string]$Url) {
   }
 }
 
-function Push-WithBearer([string]$Token) {
-  # Avoid putting the token into git remote config by using an extra HTTP header.
-  git -c http.https://github.com/.extraheader="AUTHORIZATION: bearer $Token" push -u origin main
+function Push-WithToken([string]$Token) {
+  # Avoid storing the token in git config by using an extra HTTP header.
+  # GitHub git-over-https expects Basic auth.
+  $bytes = [Text.Encoding]::ASCII.GetBytes(("x-access-token:{0}" -f $Token))
+  $b64 = [Convert]::ToBase64String($bytes)
+  $configArg = ("http.https://github.com/.extraheader=AUTHORIZATION: basic {0}" -f $b64)
+  & git -c $configArg push -u origin main
   if ($LASTEXITCODE -ne 0) { throw "git push failed." }
 }
-
-param(
-  [string]$RepoName = "driveXfriends",
-  [switch]$SkipCreate
-)
 
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $root
@@ -84,13 +88,19 @@ if (-not $SkipCreate) {
     Invoke-GhApi "POST" "https://api.github.com/user/repos" @{ name = $RepoName; private = $true } | Out-Null
     Write-Host "Created repo: $full"
   } catch {
-    # 422: already exists
-    $msg = $_.Exception.Message
-    Write-Host "Repo create skipped (maybe already exists): $msg"
+    $status = $null
+    try { $status = $_.Exception.Response.StatusCode.value__ } catch { $status = $null }
+    if ($status -eq 422) {
+      Write-Host "Repo already exists: $full"
+    } elseif ($status -eq 403) {
+      throw "GitHub token cannot create repositories (403). Create the private repo '$full' on GitHub, then rerun with -SkipCreate."
+    } else {
+      throw
+    }
   }
 }
 
 Ensure-RemoteOrigin ("https://github.com/$full.git")
-Push-WithBearer $token
+Push-WithToken $token
 
 Write-Host "Pushed to: https://github.com/$full"

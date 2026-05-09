@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { coda } from "@/lib/content";
+import { BrandMark } from "@/components/primitives/brand-mark";
 
 export function Coda() {
   return (
@@ -27,10 +28,10 @@ export function Coda() {
         whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         viewport={{ once: true, margin: "-20%" }}
         transition={{ duration: 1.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="text-grad relative px-6 text-center font-sans font-medium leading-[1] tracking-[-0.04em]"
-        style={{ fontSize: "clamp(3rem, 11vw, 11rem)" }}
+        className="text-grad relative px-6 text-center"
       >
-        {coda.line}
+        <BrandMark />
+        <span className="sr-only">{coda.line}</span>
       </motion.div>
 
       <motion.span

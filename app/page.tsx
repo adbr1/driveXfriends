@@ -24,8 +24,8 @@ export default function Home() {
         <Interstitial
           roman="II"
           eyebrow="Territoire"
-          title="Le pays comme circuit."
-          subtitle="118 km, 1 240 m de dénivelé. Cinq itinéraires dessinés au cœur du Grand-Duché."
+          title="La saison se trace."
+          subtitle="Monaco, Forêt-Noire, Luxembourg : les prochains événements deviennent des points de fuite."
         />
         <ChapterTerritoire data={europeData} />
 

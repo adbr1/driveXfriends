@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform } from "motion/react";
 import { useEffect, useState } from "react";
 import { chapters } from "@/lib/content";
+import { BrandMark } from "@/components/primitives/brand-mark";
 import { cn } from "@/lib/utils";
 
 const INTRO_SESSION_KEY = "dxf-prologue-played";
@@ -36,6 +37,40 @@ const navItem = {
     y: 0,
     scale: 1,
     transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const mobilePanel = {
+  closed: {
+    opacity: 0,
+    y: -12,
+    scale: 0.96,
+    filter: "blur(12px)",
+    pointerEvents: "none" as const,
+    transition: { duration: 0.28, ease: [0.65, 0, 0.05, 1] },
+  },
+  open: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: "blur(0px)",
+    pointerEvents: "auto" as const,
+    transition: {
+      duration: 0.46,
+      ease: [0.16, 1, 0.3, 1],
+      staggerChildren: 0.055,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const mobileLink = {
+  closed: { opacity: 0, y: -8, scale: 0.98 },
+  open: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] },
   },
 };
 
@@ -108,7 +143,7 @@ export function Nav() {
         initial="hidden"
         animate={visible ? "visible" : "hidden"}
         className={cn(
-          "fixed inset-x-0 top-0 z-[60] flex justify-center px-4 pt-4 md:pt-6",
+          "fixed inset-x-0 top-0 z-[60] flex justify-center px-3 pt-4 md:px-4 md:pt-6",
           !visible && "pointer-events-none",
         )}
       >
@@ -124,20 +159,36 @@ export function Nav() {
             filter: "blur(18px)",
           }}
         />
-        <div className="relative flex items-center gap-2">
+        <motion.div
+          aria-hidden
+          className="fixed inset-0 z-[-1] md:hidden"
+          initial={false}
+          animate={{
+            opacity: open && visible ? 1 : 0,
+            backdropFilter: open && visible ? "blur(30px) saturate(135%)" : "blur(0px)",
+            WebkitBackdropFilter: open && visible ? "blur(30px) saturate(135%)" : "blur(0px)",
+            pointerEvents: open && visible ? "auto" : "none",
+          }}
+          transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(var(--rgb-bg),0.34), rgba(var(--rgb-bg),0.18) 48%, rgba(var(--rgb-bg),0.4))",
+          }}
+          onClick={() => setOpen(false)}
+        />
+
+        <div className="relative flex items-center gap-2 rounded-full bg-[rgba(var(--rgb-bg),0.34)] p-1.5 shadow-[0_18px_60px_-28px_rgba(0,0,0,0.9)] backdrop-blur-xl md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0">
           <motion.a
             variants={navItem}
             href="#prologue"
             aria-label="Drive x Friends — accueil"
-            className="surface-soft border-soft press group flex items-center gap-2.5 rounded-full px-4 py-2.5 text-[var(--color-bone)] transition-colors hover:text-[var(--color-bone)]"
+            className="surface-soft border-soft press group flex h-[52px] items-center gap-2.5 rounded-full px-4 text-[var(--color-bone)] transition-colors hover:text-[var(--color-bone)] md:h-auto md:gap-2.5 md:px-4 md:py-2.5"
           >
-            <span aria-hidden className="relative inline-flex h-[18px] w-[18px] items-center justify-center">
+            <span aria-hidden className="relative inline-flex h-[22px] w-[22px] items-center justify-center md:h-[18px] md:w-[18px]">
               <span className="absolute inset-0 rounded-full border border-[rgba(var(--rgb-fg),0.5)] transition-all duration-500 group-hover:border-[rgba(var(--rgb-fg),0.85)] group-hover:rotate-90" />
-              <span className="text-[10px] font-medium leading-none text-current">×</span>
+              <span className="text-[12px] font-medium leading-none text-current md:text-[10px]">×</span>
             </span>
-            <span className="text-[12px] font-medium tracking-[0.04em]">
-              Drive <span className="text-[var(--color-silver)]">×</span> Friends
-            </span>
+            <BrandMark compact className="scale-[0.82] text-[var(--color-bone)] md:scale-[0.72]" />
           </motion.a>
 
           <motion.nav
@@ -186,19 +237,21 @@ export function Nav() {
             aria-expanded={open}
             aria-label="Ouvrir le menu"
             onClick={() => setOpen((v) => !v)}
-            className="surface-soft border-soft press flex h-[42px] w-[42px] items-center justify-center rounded-full text-[var(--color-bone)] md:hidden"
+            animate={{ rotate: open ? 90 : 0 }}
+            transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+            className="surface-soft border-soft press flex h-[52px] w-[52px] items-center justify-center rounded-full text-[var(--color-bone)] md:hidden"
           >
-            <span aria-hidden className="relative h-[10px] w-[14px]">
+            <span aria-hidden className="relative h-[12px] w-[18px]">
               <span
                 className={cn(
                   "absolute left-0 right-0 top-0 h-[1px] bg-current transition-transform duration-300",
-                  open && "translate-y-[4px] rotate-45",
+                  open && "translate-y-[5px] rotate-45",
                 )}
               />
               <span
                 className={cn(
                   "absolute left-0 right-0 bottom-0 h-[1px] bg-current transition-transform duration-300",
-                  open && "-translate-y-[5px] -rotate-45",
+                  open && "-translate-y-[6px] -rotate-45",
                 )}
               />
             </span>
@@ -207,13 +260,22 @@ export function Nav() {
 
         <motion.div
           initial={false}
-          animate={open ? { opacity: 1, y: 0, pointerEvents: "auto" } : { opacity: 0, y: -8, pointerEvents: "none" }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute left-4 right-4 top-[68px] z-[55] md:hidden"
+          variants={mobilePanel}
+          animate={open ? "open" : "closed"}
+          className="absolute left-3 right-3 top-[86px] z-[65] md:hidden"
         >
-          <div className="surface-soft border-soft rounded-3xl p-2">
+          <div
+            className="border-soft rounded-[28px] border border-[rgba(var(--rgb-fg),0.16)] p-2 shadow-[0_34px_110px_-32px_rgba(0,0,0,0.96)]"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(var(--rgb-bg),0.46), rgba(var(--rgb-bg),0.24)), rgba(122,167,255,0.08)",
+              backdropFilter: "blur(46px) saturate(170%) contrast(1.08)",
+              WebkitBackdropFilter: "blur(46px) saturate(170%) contrast(1.08)",
+            }}
+          >
             {chapters.map((c) => (
-              <a
+              <motion.a
+                variants={mobileLink}
                 key={c.id}
                 href={`#${c.id}`}
                 onClick={() => setOpen(false)}
@@ -226,16 +288,17 @@ export function Nav() {
               >
                 <span>{c.title}</span>
                 <span className="opacity-50">{c.roman}</span>
-              </a>
+              </motion.a>
             ))}
-            <a
+            <motion.a
+              variants={mobileLink}
               href="#invitation"
               onClick={() => setOpen(false)}
               className="press mt-1 flex items-center justify-center gap-2 rounded-2xl bg-[var(--color-bone)] px-4 py-3 text-sm font-medium text-[var(--color-ink)]"
             >
               <span className="led-live h-[6px] w-[6px] rounded-full bg-[var(--color-signal)]" />
               Adhérer
-            </a>
+            </motion.a>
           </div>
         </motion.div>
       </motion.header>

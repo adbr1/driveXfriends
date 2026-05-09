@@ -5,57 +5,45 @@ import { type MouseEvent, useRef } from "react";
 import { invitation } from "@/lib/content";
 import { ChapterCard } from "@/components/primitives/chapter-card";
 import { MagneticButton } from "@/components/primitives/magnetic-button";
+import { RevealTitle, SectionSequence, SequenceItem } from "@/components/primitives/section-sequence";
 import { useIsTouch, usePrefersReducedMotion } from "@/lib/hooks";
 
 export function ChapterInvitation() {
   return (
     <section id="invitation" aria-labelledby="invitation-title" className="relative">
       <div className="mx-auto max-w-[1440px] px-[var(--gutter)] pt-[clamp(4rem,10vh,8rem)]">
-        <ChapterCard roman="V" title="Invitation" timecode="01:02:55" />
+        <SectionSequence>
+          <SequenceItem>
+            <ChapterCard roman="V" title="Invitation" timecode="01:02:55" />
+          </SequenceItem>
 
         <div className="mt-12 grid grid-cols-12 gap-x-6 gap-y-10 pb-[clamp(6rem,14vh,10rem)] md:mt-16 md:gap-y-16">
           <div className="col-span-12 md:col-span-5 md:pt-6">
-            <h2
+            <RevealTitle
               id="invitation-title"
               className="text-grad font-sans font-medium leading-[0.96] tracking-[-0.025em]"
               style={{ fontSize: "clamp(2.25rem, 10vw, 4.6rem)" }}
             >
-              <span className="block overflow-hidden">
-                <motion.span
-                  className="block"
-                  initial={{ y: "100%" }}
-                  whileInView={{ y: "0%" }}
-                  viewport={{ once: true, margin: "0px 0px -18% 0px" }}
-                  transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  L'invitation
-                </motion.span>
-              </span>
-              <span className="block overflow-hidden text-[var(--color-silver-dim)]">
-                <motion.span
-                  className="block"
-                  initial={{ y: "100%" }}
-                  whileInView={{ y: "0%" }}
-                  viewport={{ once: true, margin: "0px 0px -18% 0px" }}
-                  transition={{ duration: 0.85, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  est personnelle.
-                </motion.span>
-              </span>
-            </h2>
-            <p className="mt-6 max-w-[40ch] text-[15px] leading-[1.65] text-[var(--color-silver)] sm:mt-8 sm:text-[17px]">
-              {invitation.body}
-            </p>
-            <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row min-[420px]:flex-wrap min-[420px]:items-center sm:mt-10">
+              L'invitation <span className="text-[var(--color-silver-dim)]">est personnelle.</span>
+            </RevealTitle>
+            <SequenceItem>
+              <p className="mt-6 max-w-[40ch] text-[15px] leading-[1.65] text-[var(--color-silver)] sm:mt-8 sm:text-[17px]">
+                {invitation.body}
+              </p>
+            </SequenceItem>
+            <SequenceItem>
+              <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row min-[420px]:flex-wrap min-[420px]:items-center sm:mt-10">
               <MagneticButton href={invitation.ctaPrimary.href} variant="primary">
                 {invitation.ctaPrimary.label}
               </MagneticButton>
               <MagneticButton href={invitation.ctaSecondary.href} variant="ghost">
                 {invitation.ctaSecondary.label}
               </MagneticButton>
-            </div>
+              </div>
+            </SequenceItem>
 
-            <ul className="mt-10 space-y-3 sm:mt-12">
+            <SequenceItem>
+              <ul className="mt-10 space-y-3 sm:mt-12">
               {[
                 "Accès aux sorties privées et roadbooks réservés",
                 "Invitations aux soirées membres et Cars & Coffee",
@@ -75,13 +63,15 @@ export function ChapterInvitation() {
                   {line}
                 </motion.li>
               ))}
-            </ul>
+              </ul>
+            </SequenceItem>
           </div>
 
-          <div className="col-span-12 flex items-center justify-center md:col-span-7">
+          <SequenceItem className="col-span-12 flex items-center justify-center md:col-span-7">
             <Pass />
-          </div>
+          </SequenceItem>
         </div>
+        </SectionSequence>
       </div>
     </section>
   );

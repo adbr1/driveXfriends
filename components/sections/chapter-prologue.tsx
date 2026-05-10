@@ -180,6 +180,34 @@ export function ChapterPrologue() {
           }
           transition={{ duration: 0.55, delay: 1.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1] }}
         >
+          {/* Radial burst — explosive starburst from center */}
+          <AnimatePresence>
+            {intro && !reduced ? (
+              <motion.div
+                key="burst"
+                aria-hidden
+                className="absolute inset-0 z-[1]"
+                exit={{ opacity: 0, transition: { duration: 0.6 } }}
+              >
+                <RadialBurst />
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+
+          {/* Speed streaks — horizontal motion lines */}
+          <AnimatePresence>
+            {intro && !reduced ? (
+              <motion.div
+                key="streaks"
+                aria-hidden
+                className="absolute inset-0 z-[2] overflow-hidden"
+                exit={{ opacity: 0, transition: { duration: 0.5 } }}
+              >
+                <SpeedStreaks />
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+
           {/* White flash */}
           <AnimatePresence>
             {intro ? (

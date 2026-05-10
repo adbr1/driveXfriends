@@ -35,17 +35,69 @@ export const manifesto = {
   highlights: ["route", "passion", "communauté", "exception", "trajectoire", "rencontre"],
 };
 
+export type EventStatus = "open" | "soon" | "tbc";
+
+export type EventDef = {
+  id: string;
+  name: string;
+  date: string;
+  location: string;
+  distance: string;
+  href: string;
+  status: EventStatus;
+  description: string;
+};
+
 export const territoire = {
-  eyebrow: "Cartographie",
-  title: "Le pays comme circuit.",
+  eyebrow: "Saison 2026",
+  title: "Le road book de la saison.",
   body:
-    "Chaque sortie est pensée comme un itinéraire : rythme, paysage, pauses, rencontres, lumière. Le trajet compte autant que la destination.",
-  routes: [
-    { id: "castle", name: "Castle Roads", length: "118 km", elev: "+1 240 m", coord: "49.81°N · 6.09°E" },
-    { id: "moselle", name: "Moselle Line", length: "94 km", elev: "+620 m", coord: "49.55°N · 6.36°E" },
-    { id: "night-coffee", name: "Night Coffee Point", length: "47 km", elev: "+180 m", coord: "49.61°N · 6.13°E" },
-    { id: "ardennes", name: "Ardennes Loop", length: "172 km", elev: "+1 880 m", coord: "49.97°N · 5.94°E" },
-    { id: "luxembourg-run", name: "Luxembourg Run", length: "63 km", elev: "+410 m", coord: "49.69°N · 6.21°E" },
+    "Chaque événement est un chapitre : un point de rendez-vous, un itinéraire, une destination. Inscrivez-vous et retrouvez-nous sur la route.",
+  events: [
+    {
+      id: "cote-azur-monaco",
+      name: "Côte d'Azur Drive",
+      date: "9-10 mai 2026",
+      location: "Monaco / Côte d'Azur",
+      distance: "930 km depuis LU",
+      href: "https://forms.gle/W4Yh5tvd1iZKUo4x8",
+      status: "open" as EventStatus,
+      description:
+        "Deux jours, un convoi, la Grande Corniche. Départ Luxembourg, arrivée Monaco — le genre de trajet qui se raconte.",
+    },
+    {
+      id: "black-forest-drive",
+      name: "Black Forest Drive",
+      date: "23-24 mai 2026",
+      location: "Forêt-Noire / Allemagne",
+      distance: "300 km depuis LU",
+      href: "https://forms.gle/SSAU4aQJzhcZiQs16",
+      status: "soon" as EventStatus,
+      description:
+        "Les routes les plus sinueuses d'Allemagne, entre sapins et villages thermaux. Deux jours hors du temps.",
+    },
+    {
+      id: "golf-drive-luxembourg",
+      name: "Golf Drive Luxembourg",
+      date: "28 juin 2026",
+      location: "Luxembourg",
+      distance: "local",
+      href: "https://forms.gle/opzjiLybZ7DbP4Fs9",
+      status: "soon" as EventStatus,
+      description:
+        "Voitures et green : une journée qui mélange deux passions avec le même souci du détail.",
+    },
+    {
+      id: "letz-meet-2026",
+      name: "LET'Z MEET",
+      date: "2026 — date à confirmer",
+      location: "Luxembourg",
+      distance: "local",
+      href: "https://forms.gle/M6waMjjMgu8jT7Df9",
+      status: "tbc" as EventStatus,
+      description:
+        "Le grand rassemblement de la communauté. Format, lieu et date encore en écriture — mais ça va marquer.",
+    },
   ],
 } as const;
 

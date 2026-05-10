@@ -3,7 +3,6 @@ import { Nav } from "@/components/sections/nav";
 import { ChapterPrologue } from "@/components/sections/chapter-prologue";
 import { Interstitial } from "@/components/sections/interstitial";
 import { ChapterTerritoire } from "@/components/sections/chapter-territoire";
-import { getEuropeMapData } from "@/lib/europe-map";
 import { ChapterExperiences } from "@/components/sections/chapter-experiences";
 import { Marquee } from "@/components/sections/marquee";
 import { ChapterMoments } from "@/components/sections/chapter-moments";
@@ -14,7 +13,6 @@ import { Coda } from "@/components/sections/coda";
 import { SiteFooter } from "@/components/sections/footer";
 
 export default function Home() {
-  const europeData = getEuropeMapData();
   return (
     <>
       <Nav />
@@ -28,7 +26,7 @@ export default function Home() {
           title="La saison se trace."
           subtitle="Monaco, Forêt-Noire, Luxembourg : les prochains événements deviennent des points de fuite."
         />
-        <ChapterTerritoire data={europeData} />
+        <ChapterTerritoire />
 
         <Interstitial
           roman="III"

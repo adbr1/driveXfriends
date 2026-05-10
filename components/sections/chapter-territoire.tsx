@@ -1,15 +1,35 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { FormEvent, useMemo, useRef, useState } from "react";
-import type { EuropeMapData, EventSpec } from "@/lib/europe-map";
-import { territoire } from "@/lib/content";
+import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { territoire, type EventDef, type EventStatus } from "@/lib/content";
 import { ChapterCard } from "@/components/primitives/chapter-card";
 import { RevealTitle, SectionSequence, SequenceItem } from "@/components/primitives/section-sequence";
 import { cn } from "@/lib/utils";
 
+/* ── colour per event slot ── */
 const EVENT_COLORS = ["#7aa7ff", "#a6ffcb", "#f4f1ea", "#b8c0cc"] as const;
 
+/* ── status badge config ── */
+const STATUS_CONFIG: Record<EventStatus, { label: string; color: string; bg: string }> = {
+  open: {
+    label: "Inscriptions ouvertes",
+    color: "var(--color-signal)",
+    bg: "rgba(52,211,153,0.12)",
+  },
+  soon: {
+    label: "Bientôt",
+    color: "var(--color-silver)",
+    bg: "rgba(var(--rgb-fg),0.06)",
+  },
+  tbc: {
+    label: "À confirmer",
+    color: "var(--color-silver-dim)",
+    bg: "rgba(var(--rgb-fg),0.04)",
+  },
+};
+
+/* ── signup payload (kept for future EmailJS integration) ── */
 type SignupPayload = {
   eventId: string;
   eventName: string;
@@ -22,7 +42,7 @@ type SignupPayload = {
   message: string;
 };
 
-export function prepareEventSignupPayload(event: EventSpec, form: HTMLFormElement): SignupPayload {
+function prepareSignupPayload(event: EventDef, form: HTMLFormElement): SignupPayload {
   const data = new FormData(form);
   return {
     eventId: event.id,
@@ -37,361 +57,515 @@ export function prepareEventSignupPayload(event: EventSpec, form: HTMLFormElemen
   };
 }
 
-export function ChapterTerritoire({ data }: { data: EuropeMapData }) {
-  const { viewBox, countries, cities, events } = data;
-  const formRef = useRef<HTMLDivElement>(null);
-  const [activeEventId, setActiveEventId] = useState(events[0]?.id ?? "");
-  const [formOpen, setFormOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+/* ═══════════════════════════════════════════════
+   MAIN SECTION
+   ═══════════════════════════════════════════════ */
 
-  const activeEvent = useMemo(
-    () => events.find((event) => event.id === activeEventId) ?? events[0],
-    [activeEventId, events],
-  );
-  const activeIndex = Math.max(0, events.findIndex((event) => event.id === activeEvent?.id));
-  const activeColor = EVENT_COLORS[activeIndex % EVENT_COLORS.length];
-  const activeCity = cities.find((city) => city.key === activeEvent?.target) ?? data.origin;
-
-  const selectEvent = (id: string) => {
-    setActiveEventId(id);
-    setSubmitted(false);
-  };
-
-  const openForm = () => {
-    setFormOpen(true);
-    window.setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
-  };
-
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!activeEvent) return;
-    const payload = prepareEventSignupPayload(activeEvent, event.currentTarget);
-    console.info("EmailJS payload ready", payload);
-    setSubmitted(true);
-    event.currentTarget.reset();
-  };
+export function ChapterTerritoire() {
+  const events = territoire.events as unknown as EventDef[];
+  const [drawerEvent, setDrawerEvent] = useState<EventDef | null>(null);
 
   return (
-    <section id="territoire" aria-labelledby="territoire-title" className="relative">
-      <div className="mx-auto max-w-[1440px] px-[var(--gutter)] pt-[clamp(4rem,10vh,8rem)]">
-        <SectionSequence>
-          <SequenceItem>
-            <ChapterCard roman="II" title="Territoire" timecode="00:11:42" />
-          </SequenceItem>
-
-          <div className="mt-10 grid grid-cols-12 gap-x-6 gap-y-8 md:mt-16">
-            <div className="col-span-12 lg:col-span-5">
-              <RevealTitle
-                id="territoire-title"
-                className="text-grad max-w-[11ch] font-sans font-medium leading-[0.96] sm:max-w-none"
-                style={{ fontSize: "clamp(2.15rem, 7vw, 4.2rem)" }}
-              >
-                Une carte. Un terrain de jeu.
-              </RevealTitle>
-              <SequenceItem>
-                <p className="mt-5 max-w-[46ch] text-[15px] leading-[1.65] text-[var(--color-silver)] sm:mt-7 sm:text-[16px]">
-                  {territoire.body} Selectionnez un rendez-vous, regardez son point de destination, puis envoyez une
-                  demande d'inscription.
-                </p>
-              </SequenceItem>
-
-              <SequenceItem>
-                <div className="mt-8">
-                  <div className="mb-3 flex items-center justify-between gap-3 px-1">
-                    <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-silver)]">
-                      Prochains evenements
-                    </span>
-                    <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--color-silver-dim)]">
-                      Inscription
-                    </span>
-                  </div>
-                  <ul className="no-scrollbar -mx-[var(--gutter)] flex gap-2 overflow-x-auto px-[var(--gutter)] pb-2 sm:mx-0 sm:block sm:overflow-visible sm:px-0">
-                    {events.map((event, i) => {
-                      const selected = event.id === activeEvent?.id;
-                      return (
-                        <li key={event.id} className="min-w-[278px] sm:min-w-0">
-                          <button
-                            type="button"
-                            aria-pressed={selected}
-                            onClick={() => selectEvent(event.id)}
-                            className={cn(
-                              "press group flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left transition-colors sm:px-5",
-                              selected
-                                ? "border-[rgba(122,167,255,0.48)] bg-[rgba(122,167,255,0.14)]"
-                                : "border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-fg),0.035)] hover:bg-[rgba(var(--rgb-fg),0.06)]",
-                              i > 0 && "sm:mt-2",
-                            )}
-                          >
-                            <span className="flex min-w-0 items-center gap-3">
-                              <span
-                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold tabular text-[var(--color-ink)]"
-                                style={{ background: EVENT_COLORS[i % EVENT_COLORS.length] }}
-                              >
-                                {String(i + 1).padStart(2, "0")}
-                              </span>
-                              <span className="min-w-0">
-                                <span className="block truncate text-[14px] font-medium text-[var(--color-bone)] sm:text-[15px]">
-                                  {event.name}
-                                </span>
-                                <span className="mt-1 block truncate text-[11px] text-[var(--color-silver-dim)]">
-                                  {event.date} - {event.location}
-                                </span>
-                              </span>
-                            </span>
-                            <span className="shrink-0 text-[11px] text-[var(--color-silver-dim)] tabular">
-                              {event.distance}
-                            </span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </SequenceItem>
-            </div>
-
-            <SequenceItem className="col-span-12 lg:col-span-7">
-              <div className="relative overflow-hidden rounded-[26px] border border-[rgba(var(--rgb-fg),0.12)] bg-[rgba(var(--rgb-fg),0.035)] p-4 shadow-[0_34px_120px_-70px_rgba(0,0,0,0.95)] backdrop-blur-xl sm:rounded-[34px] sm:p-6">
-                <div
-                  aria-hidden
-                  className="absolute inset-0"
-                  style={{
-                    background:
-                      "radial-gradient(ellipse at 78% 18%, rgba(244,241,234,0.1), transparent 34%), radial-gradient(ellipse at 18% 84%, rgba(122,167,255,0.16), transparent 42%), linear-gradient(135deg, rgba(var(--rgb-fg),0.045), rgba(var(--rgb-bg),0.18) 52%, rgba(var(--rgb-fg),0.025))",
-                  }}
-                />
-                <div className="relative z-[1] flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(var(--rgb-bg),0.66)] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--color-silver)] backdrop-blur">
-                    <span className="h-[5px] w-[5px] rounded-full" style={{ background: activeColor }} />
-                    Point actif
-                  </span>
-                  <button
-                    type="button"
-                    onClick={openForm}
-                    className="press rounded-full bg-[var(--color-bone)] px-4 py-2 text-[12px] font-medium text-[var(--color-ink)]"
-                  >
-                    S'inscrire
-                  </button>
-                </div>
-
-                <div className="relative z-[1] mt-5 grid gap-5 lg:grid-cols-[1fr_0.78fr] lg:items-end">
-                  <div className="relative min-h-[300px] overflow-hidden rounded-[22px] border border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.34)] sm:min-h-[420px]">
-                    {(() => {
-                      const fx = activeEvent?.focus.x ?? viewBox.w / 2;
-                      const fy = activeEvent?.focus.y ?? viewBox.h / 2;
-                      const sc = activeEvent?.focus.scale ?? 4;
-                      const vbW = viewBox.w / sc;
-                      const vbH = viewBox.h / sc;
-                      const vbX = fx - vbW / 2;
-                      const vbY = fy - vbH / 2;
-                      return (
-                        <svg
-                          viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
-                          className="absolute inset-0 h-full w-full"
-                          preserveAspectRatio="xMidYMid meet"
-                          aria-hidden
-                          style={{ transition: "all 0.85s cubic-bezier(0.16, 1, 0.3, 1)" }}
-                        >
-                          {countries.map((country) => (
-                            <path
-                              key={country.id}
-                              d={country.d}
-                              fill={country.isLU ? "rgba(166,255,203,0.22)" : "rgba(var(--rgb-fg),0.11)"}
-                              stroke={country.isLU ? "rgba(166,255,203,0.7)" : "rgba(var(--rgb-fg),0.28)"}
-                              strokeWidth={country.isLU ? 3 : 1.6}
-                              vectorEffect="non-scaling-stroke"
-                            />
-                          ))}
-                          {events.map((event, i) => {
-                            const city = cities.find((item) => item.key === event.target);
-                            if (!city) return null;
-                            const selected = event.id === activeEvent?.id;
-                            return (
-                              <g key={event.id}>
-                                <motion.circle
-                                  cx={city.x}
-                                  cy={city.y}
-                                  r={selected ? 8 : 5}
-                                  fill={EVENT_COLORS[i % EVENT_COLORS.length]}
-                                  opacity={selected ? 0.25 : 0.1}
-                                  animate={selected ? { scale: [0.8, 1.4, 0.8] } : { scale: 1 }}
-                                  transition={{ duration: 2.4, repeat: selected ? Infinity : 0, ease: "easeInOut" }}
-                                  style={{ transformOrigin: `${city.x}px ${city.y}px` }}
-                                />
-                                <circle
-                                  cx={city.x}
-                                  cy={city.y}
-                                  r={selected ? 4 : 3}
-                                  fill={EVENT_COLORS[i % EVENT_COLORS.length]}
-                                  stroke="rgba(var(--rgb-bg),0.95)"
-                                  strokeWidth="2"
-                                  vectorEffect="non-scaling-stroke"
-                                />
-                                {selected && (
-                                  <text
-                                    x={city.x}
-                                    y={city.y - 24}
-                                    textAnchor="middle"
-                                    fill="var(--color-bone)"
-                                    fontSize="11"
-                                    fontWeight="600"
-                                    fontFamily="var(--font-geist-sans), system-ui, sans-serif"
-                                    letterSpacing="0.04em"
-                                  >
-                                    {event.name}
-                                  </text>
-                                )}
-                              </g>
-                            );
-                          })}
-                          {/* Route line for active event */}
-                          {activeEvent?.d && (
-                            <motion.path
-                              key={activeEvent.id + "-route"}
-                              d={activeEvent.d}
-                              fill="none"
-                              stroke={activeColor}
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeDasharray="6 4"
-                              vectorEffect="non-scaling-stroke"
-                              initial={{ pathLength: 0, opacity: 0 }}
-                              animate={{ pathLength: 1, opacity: 0.7 }}
-                              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                            />
-                          )}
-                        </svg>
-                      );
-                    })()}
-                    <motion.div
-                      key={activeEvent?.id}
-                      className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] rounded-full border border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-bg),0.72)] px-4 py-2 text-[12px] font-medium text-[var(--color-bone)] backdrop-blur-xl"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-                    >
-                      {activeEvent?.location} · {activeEvent?.date}
-                    </motion.div>
-                  </div>
-
-                  <div className="rounded-[22px] border border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.42)] p-5">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--color-silver-dim)]">
-                      Evenement selectionne
-                    </p>
-                    <h3 className="mt-3 text-2xl font-medium leading-tight text-[var(--color-bone)]">
-                      {activeEvent?.name}
-                    </h3>
-                    <p className="mt-3 text-sm leading-6 text-[var(--color-silver)]">
-                      Un point de rendez-vous, une destination, et une demande d'inscription qui partira bientot via
-                      EmailJS.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={openForm}
-                      className="press mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-[var(--color-bone)] px-5 text-[13px] font-medium text-[var(--color-ink)]"
-                    >
-                      Ouvrir le formulaire
-                    </button>
-                  </div>
-                </div>
-              </div>
+    <>
+      <section id="territoire" aria-labelledby="territoire-title" className="relative">
+        <div className="mx-auto max-w-[1440px] px-[var(--gutter)] pt-[clamp(4rem,10vh,8rem)]">
+          <SectionSequence>
+            <SequenceItem>
+              <ChapterCard roman="II" title="Territoire" timecode="00:11:42" />
             </SequenceItem>
-          </div>
 
-          <SequenceItem className="mt-6 pb-[clamp(6rem,14vh,10rem)] lg:mt-8" ref={formRef}>
-            <AnimatePresence initial={false}>
-              {formOpen ? (
-                <motion.div
-                  key={activeEvent?.id}
-                  className="relative overflow-hidden rounded-[26px] border border-[rgba(var(--rgb-fg),0.12)] bg-[rgba(var(--rgb-fg),0.045)] p-4 shadow-[0_28px_100px_-70px_rgba(0,0,0,0.95)] backdrop-blur-xl sm:rounded-[34px] sm:p-6 lg:p-8"
-                  initial={{ opacity: 0, y: 28, scale: 0.985 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 16, scale: 0.99 }}
-                  transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            <div className="mt-10 grid grid-cols-12 gap-x-6 gap-y-8 md:mt-16">
+              {/* ─── Left: title + intro ─── */}
+              <div className="col-span-12 lg:col-span-5">
+                <RevealTitle
+                  id="territoire-title"
+                  className="text-grad max-w-[14ch] font-sans font-medium leading-[0.96] sm:max-w-none"
+                  style={{ fontSize: "clamp(2.15rem, 7vw, 4.2rem)" }}
                 >
-                  <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--color-silver)]">
-                        Demande d'inscription
-                      </p>
-                      <h3 className="mt-3 max-w-[12ch] text-3xl font-medium leading-[0.95] text-[var(--color-bone)] sm:text-5xl">
-                        {activeEvent?.name}
-                      </h3>
-                      <p className="mt-4 max-w-[38ch] text-sm leading-6 text-[var(--color-silver)]">
-                        L'envoi EmailJS sera branche ici. Pour l'instant, le formulaire prepare deja un payload stable
-                        avec l'evenement choisi.
-                      </p>
-                    </div>
-
-                    <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
-                      <Field name="name" label="Nom" required />
-                      <Field name="email" label="Email" type="email" required />
-                      <Field name="phone" label="Telephone" />
-                      <Field name="instagram" label="Instagram" />
-                      <Field name="car" label="Voiture" className="sm:col-span-2" required />
-                      <label className="sm:col-span-2">
-                        <span className="mb-2 block text-[11px] uppercase tracking-[0.16em] text-[var(--color-silver-dim)]">
-                          Message
-                        </span>
-                        <textarea
-                          name="message"
-                          rows={4}
-                          className="w-full resize-none rounded-2xl border border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-bg),0.46)] px-4 py-3 text-sm text-[var(--color-bone)] outline-none transition-colors placeholder:text-[var(--color-silver-dim)] focus:border-[rgba(122,167,255,0.7)]"
-                          placeholder="Votre disponibilite, passager, details utiles..."
-                        />
-                      </label>
-                      <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:items-center">
-                        <button
-                          type="submit"
-                          className="press inline-flex h-12 items-center justify-center rounded-full bg-[var(--color-bone)] px-6 text-[13px] font-medium text-[var(--color-ink)]"
-                        >
-                          Envoyer la demande
-                        </button>
-                        {submitted ? (
-                          <motion.p
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="text-sm text-[var(--color-signal)]"
-                          >
-                            Demande preparee. EmailJS pourra reprendre ce payload.
-                          </motion.p>
-                        ) : null}
-                      </div>
-                    </form>
+                  {territoire.title}
+                </RevealTitle>
+                <SequenceItem>
+                  <p className="mt-5 max-w-[46ch] text-[15px] leading-[1.65] text-[var(--color-silver)] sm:mt-7 sm:text-[16px]">
+                    {territoire.body}
+                  </p>
+                </SequenceItem>
+                <SequenceItem>
+                  <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-[rgba(var(--rgb-fg),0.05)] px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[var(--color-silver)] backdrop-blur">
+                    <span className="h-[5px] w-[5px] rounded-full bg-[var(--color-volt)]" />
+                    {territoire.eyebrow}
                   </div>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-          </SequenceItem>
-        </SectionSequence>
-      </div>
-    </section>
+                </SequenceItem>
+              </div>
+
+              {/* ─── Right: vertical timeline ─── */}
+              <div className="col-span-12 lg:col-span-7">
+                <Timeline events={events} onSignup={setDrawerEvent} />
+              </div>
+            </div>
+          </SectionSequence>
+        </div>
+
+        {/* bottom padding */}
+        <div className="h-[clamp(6rem,14vh,10rem)]" />
+      </section>
+
+      {/* ─── Registration drawer ─── */}
+      <SignupDrawer event={drawerEvent} onClose={() => setDrawerEvent(null)} />
+    </>
   );
 }
 
-function Field({
+/* ═══════════════════════════════════════════════
+   TIMELINE
+   ═══════════════════════════════════════════════ */
+
+function Timeline({ events, onSignup }: { events: EventDef[]; onSignup: (e: EventDef) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start 85%", "end 55%"],
+  });
+  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
+  return (
+    <div ref={ref} className="relative pl-8 sm:pl-12 md:pl-16">
+      {/* ── vertical rail ── */}
+      <div
+        aria-hidden
+        className="absolute left-[11px] top-0 bottom-0 w-[2px] sm:left-[19px] md:left-[27px]"
+        style={{ background: "rgba(var(--rgb-fg),0.07)" }}
+      />
+      {/* ── animated progress ── */}
+      <motion.div
+        aria-hidden
+        className="absolute left-[11px] top-0 w-[2px] sm:left-[19px] md:left-[27px]"
+        style={{
+          height: lineHeight,
+          background: "linear-gradient(180deg, #7aa7ff 0%, #a6ffcb 60%, rgba(var(--rgb-fg),0.12) 100%)",
+          boxShadow: "0 0 18px rgba(122,167,255,0.35)",
+        }}
+      />
+
+      {/* ── event cards ── */}
+      <div className="flex flex-col gap-4 sm:gap-5">
+        {events.map((event, i) => (
+          <TimelineCard
+            key={event.id}
+            event={event}
+            index={i}
+            color={EVENT_COLORS[i % EVENT_COLORS.length]}
+            onSignup={() => onSignup(event)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   TIMELINE CARD
+   ═══════════════════════════════════════════════ */
+
+function TimelineCard({
+  event,
+  index,
+  color,
+  onSignup,
+}: {
+  event: EventDef;
+  index: number;
+  color: string;
+  onSignup: () => void;
+}) {
+  const status = STATUS_CONFIG[event.status];
+
+  return (
+    <motion.div
+      className="relative"
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -12% 0px" }}
+      transition={{ delay: index * 0.08, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {/* ── dot on the rail ── */}
+      <div
+        className="absolute -left-8 top-6 flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold sm:-left-12 sm:h-7 sm:w-7 sm:text-[10px] md:-left-16 md:h-8 md:w-8"
+        style={{
+          background: color,
+          color: "var(--color-ink)",
+          boxShadow: `0 0 24px ${color}44, 0 0 0 4px rgba(5,5,5,1)`,
+        }}
+      >
+        {String(index + 1).padStart(2, "0")}
+      </div>
+
+      {/* ── card ── */}
+      <div
+        className={cn(
+          "group relative overflow-hidden rounded-[20px] border p-5 sm:rounded-[24px] sm:p-6",
+          "border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-fg),0.03)]",
+          "transition-all duration-500",
+          "hover:border-[rgba(var(--rgb-fg),0.18)] hover:bg-[rgba(var(--rgb-fg),0.055)]",
+        )}
+      >
+        {/* glow on hover */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-px rounded-[20px] opacity-0 transition-opacity duration-500 group-hover:opacity-100 sm:rounded-[24px]"
+          style={{
+            background: `radial-gradient(600px circle at 50% 0%, ${color}11, transparent 60%)`,
+          }}
+        />
+
+        {/* gradient hairline border */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[20px] sm:rounded-[24px]"
+          style={{
+            padding: "1px",
+            background: `linear-gradient(140deg, ${color}55, rgba(var(--rgb-fg),0.04) 30%, rgba(var(--rgb-fg),0.02) 70%, ${color}33)`,
+            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            maskComposite: "exclude",
+          }}
+        />
+
+        <div className="relative z-[1]">
+          {/* header row */}
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h3
+                className="text-[20px] font-medium leading-tight text-[var(--color-bone)] sm:text-[22px]"
+                style={{
+                  backgroundImage: `linear-gradient(135deg, var(--color-bone) 60%, ${color})`,
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                {event.name}
+              </h3>
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-[var(--color-silver-dim)]">
+                <span className="inline-flex items-center gap-1.5">
+                  <span aria-hidden className="text-[10px]">◆</span>
+                  {event.date}
+                </span>
+                <span>{event.location}</span>
+                <span className="tabular">{event.distance}</span>
+              </div>
+            </div>
+
+            {/* status badge */}
+            <span
+              className="shrink-0 rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-[0.14em]"
+              style={{ background: status.bg, color: status.color }}
+            >
+              {event.status === "open" && (
+                <span className="mr-1.5 inline-block h-[5px] w-[5px] animate-pulse rounded-full bg-[var(--color-signal)]" />
+              )}
+              {status.label}
+            </span>
+          </div>
+
+          {/* description */}
+          <p className="mt-4 max-w-[54ch] text-[14px] leading-[1.65] text-[var(--color-silver)]">
+            {event.description}
+          </p>
+
+          {/* CTA */}
+          <div className="mt-5 flex items-center gap-4">
+            <button
+              type="button"
+              onClick={onSignup}
+              className={cn(
+                "press group/btn inline-flex h-10 items-center gap-2 rounded-full px-5 text-[12px] font-medium transition-all duration-300",
+                event.status === "open"
+                  ? "bg-[var(--color-bone)] text-[var(--color-ink)] shadow-[0_6px_24px_-8px_rgba(var(--rgb-fg),0.4)] hover:shadow-[0_12px_36px_-8px_rgba(var(--rgb-fg),0.55)]"
+                  : "border border-[rgba(var(--rgb-fg),0.12)] bg-[rgba(var(--rgb-fg),0.04)] text-[var(--color-bone)] hover:bg-[rgba(var(--rgb-fg),0.08)]",
+              )}
+            >
+              {event.status === "tbc" ? "Me notifier" : "S'inscrire"}
+              <span
+                aria-hidden
+                className="inline-block translate-x-0 transition-transform duration-300 group-hover/btn:translate-x-0.5"
+              >
+                →
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   SIGNUP DRAWER (slide-in panel)
+   ═══════════════════════════════════════════════ */
+
+function SignupDrawer({ event, onClose }: { event: EventDef | null; onClose: () => void }) {
+  const [submitted, setSubmitted] = useState(false);
+  const isOpen = event !== null;
+
+  // Reset submitted state when switching events
+  useEffect(() => {
+    setSubmitted(false);
+  }, [event?.id]);
+
+  // Lock body scroll when open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // Close on escape
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
+
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!event) return;
+    const payload = prepareSignupPayload(event, e.currentTarget);
+    console.info("EmailJS payload ready", payload);
+    setSubmitted(true);
+    e.currentTarget.reset();
+  };
+
+  const statusCfg = event ? STATUS_CONFIG[event.status] : STATUS_CONFIG.open;
+
+  return (
+    <AnimatePresence>
+      {isOpen && event ? (
+        <>
+          {/* ── backdrop ── */}
+          <motion.div
+            key="drawer-backdrop"
+            className="fixed inset-0 z-[90] bg-[rgba(0,0,0,0.6)] backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            onClick={onClose}
+          />
+
+          {/* ── drawer panel ── */}
+          <motion.div
+            key="drawer-panel"
+            className="fixed inset-y-0 right-0 z-[91] w-full max-w-[540px] overflow-y-auto"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div
+              className="relative min-h-full border-l border-[rgba(var(--rgb-fg),0.1)]"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(12,12,14,0.98) 0%, rgba(5,5,5,0.99) 100%)",
+              }}
+            >
+              {/* top glow */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 top-0 h-[200px]"
+                style={{
+                  background: `radial-gradient(ellipse 80% 100% at 50% 0%, ${EVENT_COLORS[territoire.events.findIndex((e) => e.id === event.id) % EVENT_COLORS.length]}18, transparent 70%)`,
+                }}
+              />
+
+              <div className="relative z-[1] p-6 sm:p-8 md:p-10">
+                {/* close button */}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="window-control ml-auto flex"
+                  aria-label="Fermer"
+                >
+                  ✕
+                </button>
+
+                {/* event info header */}
+                <div className="mt-8">
+                  <span
+                    className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-[0.14em]"
+                    style={{ background: statusCfg.bg, color: statusCfg.color }}
+                  >
+                    {event.status === "open" && (
+                      <span className="led-live inline-block h-[5px] w-[5px] rounded-full bg-[var(--color-signal)]" />
+                    )}
+                    {statusCfg.label}
+                  </span>
+                  <h3 className="mt-4 text-3xl font-medium leading-[0.95] text-[var(--color-bone)] sm:text-4xl">
+                    {event.name}
+                  </h3>
+                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-[var(--color-silver-dim)]">
+                    <span>{event.date}</span>
+                    <span>{event.location}</span>
+                    <span className="tabular">{event.distance}</span>
+                  </div>
+                  <p className="mt-4 max-w-[42ch] text-[14px] leading-[1.65] text-[var(--color-silver)]">
+                    {event.description}
+                  </p>
+                </div>
+
+                {/* divider */}
+                <div className="hairline my-8" />
+
+                {/* form or success */}
+                <AnimatePresence mode="wait">
+                  {submitted ? (
+                    <motion.div
+                      key="success"
+                      className="flex flex-col items-center gap-4 py-12 text-center"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <motion.div
+                        className="flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(52,211,153,0.12)]"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.15, duration: 0.5, type: "spring", stiffness: 200, damping: 12 }}
+                      >
+                        <span className="text-2xl text-[var(--color-signal)]">✓</span>
+                      </motion.div>
+                      <h4 className="text-xl font-medium text-[var(--color-bone)]">
+                        Demande envoyée
+                      </h4>
+                      <p className="max-w-[32ch] text-[14px] leading-[1.6] text-[var(--color-silver)]">
+                        Votre inscription a été préparée. Nous reviendrons vers vous rapidement.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={onClose}
+                        className="press mt-4 rounded-full border border-[rgba(var(--rgb-fg),0.12)] bg-[rgba(var(--rgb-fg),0.04)] px-6 py-2.5 text-[13px] font-medium text-[var(--color-bone)] transition-colors hover:bg-[rgba(var(--rgb-fg),0.08)]"
+                      >
+                        Fermer
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.form
+                      key="form"
+                      onSubmit={onSubmit}
+                      className="space-y-6"
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.4 }}
+                    >
+                      {/* Group: You */}
+                      <fieldset>
+                        <legend className="mb-4 text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-silver)]">
+                          Vous
+                        </legend>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <DrawerField name="name" label="Nom" placeholder="Alexandre Dupont" required />
+                          <DrawerField name="email" label="Email" type="email" placeholder="alex@exemple.com" required />
+                          <DrawerField name="phone" label="Téléphone" placeholder="+352 ..." />
+                          <DrawerField name="instagram" label="Instagram" placeholder="@votre_handle" />
+                        </div>
+                      </fieldset>
+
+                      {/* Group: Car */}
+                      <fieldset>
+                        <legend className="mb-4 text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-silver)]">
+                          Votre voiture
+                        </legend>
+                        <DrawerField
+                          name="car"
+                          label="Modèle"
+                          placeholder="Porsche 911 GT3, BMW M3 E46..."
+                          required
+                        />
+                      </fieldset>
+
+                      {/* Group: Message */}
+                      <fieldset>
+                        <legend className="mb-4 text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-silver)]">
+                          Message
+                        </legend>
+                        <label>
+                          <span className="sr-only">Message</span>
+                          <textarea
+                            name="message"
+                            rows={4}
+                            className={cn(
+                              "w-full resize-none rounded-2xl border px-4 py-3 text-[14px] leading-[1.6] text-[var(--color-bone)] outline-none transition-all duration-300",
+                              "border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-fg),0.04)]",
+                              "placeholder:text-[var(--color-silver-dim)]",
+                              "focus:border-[rgba(122,167,255,0.5)] focus:bg-[rgba(var(--rgb-fg),0.06)] focus:shadow-[0_0_0_3px_rgba(122,167,255,0.1)]",
+                            )}
+                            placeholder="Disponibilité, passager, détails utiles..."
+                          />
+                        </label>
+                      </fieldset>
+
+                      {/* Submit */}
+                      <button
+                        type="submit"
+                        className="press inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--color-bone)] px-6 text-[13px] font-medium text-[var(--color-ink)] shadow-[0_8px_30px_-10px_rgba(var(--rgb-fg),0.45)] transition-shadow duration-300 hover:shadow-[0_18px_50px_-12px_rgba(var(--rgb-fg),0.6)]"
+                      >
+                        Envoyer la demande
+                        <span aria-hidden>→</span>
+                      </button>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   DRAWER FIELD
+   ═══════════════════════════════════════════════ */
+
+function DrawerField({
   name,
   label,
   type = "text",
   required = false,
-  className,
+  placeholder,
 }: {
   name: string;
   label: string;
   type?: string;
   required?: boolean;
-  className?: string;
+  placeholder?: string;
 }) {
   return (
-    <label className={className}>
-      <span className="mb-2 block text-[11px] uppercase tracking-[0.16em] text-[var(--color-silver-dim)]">
+    <label className="block">
+      <span className="mb-2 block text-[11px] uppercase tracking-[0.14em] text-[var(--color-silver-dim)]">
         {label}
+        {required && <span className="ml-1 text-[var(--color-volt)]">*</span>}
       </span>
       <input
         name={name}
         type={type}
         required={required}
-        className="h-12 w-full rounded-2xl border border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-bg),0.46)] px-4 text-sm text-[var(--color-bone)] outline-none transition-colors placeholder:text-[var(--color-silver-dim)] focus:border-[rgba(122,167,255,0.7)]"
+        placeholder={placeholder}
+        className={cn(
+          "h-12 w-full rounded-2xl border px-4 text-[14px] text-[var(--color-bone)] outline-none transition-all duration-300",
+          "border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-fg),0.04)]",
+          "placeholder:text-[var(--color-silver-dim)]",
+          "focus:border-[rgba(122,167,255,0.5)] focus:bg-[rgba(var(--rgb-fg),0.06)] focus:shadow-[0_0_0_3px_rgba(122,167,255,0.1)]",
+        )}
       />
     </label>
   );

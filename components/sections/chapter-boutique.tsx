@@ -127,23 +127,12 @@ export function ChapterBoutique() {
 
           <div className="mt-10 grid gap-10 md:mt-16 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
             <div>
-              <SequenceItem>
-                <motion.p
-                  className="inline-flex items-center gap-2 rounded-full bg-[rgba(var(--rgb-fg),0.06)] px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[var(--color-silver)]"
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <span className="h-[5px] w-[5px] rounded-full bg-[var(--color-volt)]" />
-                  {shop.eyebrow}
-                </motion.p>
-              </SequenceItem>
               <RevealTitle
                 id="boutique-title"
-                className="text-grad mt-6 max-w-[9ch] font-sans font-black uppercase leading-[0.84]"
-                style={{ fontSize: "clamp(3.2rem, 10vw, 8rem)" }}
+                className="text-grad font-sans font-medium leading-[0.96] tracking-[-0.025em]"
+                style={{ fontSize: "clamp(2.25rem, 10vw, 5rem)" }}
               >
-                {shop.title}
+                Objets de <span className="text-[var(--color-silver-dim)]">club.</span>
               </RevealTitle>
             </div>
             <SequenceItem>

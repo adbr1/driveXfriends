@@ -85,7 +85,7 @@ export function ChapterTerritoire() {
                   className="text-grad max-w-[14ch] font-sans font-medium leading-[0.96] sm:max-w-none"
                   style={{ fontSize: "clamp(2.15rem, 7vw, 4.2rem)" }}
                 >
-                  {saison.title}
+                  Le road book <span className="text-[var(--color-silver-dim)]">de la saison.</span>
                 </RevealTitle>
                 <SequenceItem>
                   <p className="mt-5 max-w-[46ch] text-[15px] leading-[1.65] text-[var(--color-silver)] sm:mt-7 sm:text-[16px]">

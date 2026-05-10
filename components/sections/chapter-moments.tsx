@@ -53,7 +53,7 @@ export function ChapterMoments() {
             <div className="col-span-12 md:col-span-7">
               <RevealTitle
                 id="moments-title"
-                className="text-grad font-sans font-medium leading-[0.96]"
+                className="text-grad font-sans font-medium leading-[0.96] tracking-[-0.025em]"
                 style={{ fontSize: "clamp(2.25rem, 10vw, 5rem)" }}
               >
                 Une memoire <span className="text-[var(--color-silver-dim)]">en longue exposition.</span>

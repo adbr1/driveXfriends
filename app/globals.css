@@ -248,6 +248,11 @@ a {
   50% { opacity: 0.55; box-shadow: 0 0 4px var(--color-signal); }
 }
 
+@keyframes road-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: -300vw 0; }
+}
+
 .led-live {
   animation: pulse-led 2.4s ease-in-out infinite;
 }

@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { brand, hero, manifesto } from "@/lib/content";
 import { MagneticButton } from "@/components/primitives/magnetic-button";
 import { MotionText } from "@/components/primitives/motion-text";
+import { IntroOverture } from "@/components/sections/intro-overture";
 import { useIsTouch, usePrefersReducedMotion } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
@@ -25,12 +26,12 @@ const HeroCanvas = dynamic(() => import("@/components/scenes/hero-canvas"), {
 
 const SESSION_KEY = "dxf-prologue-played";
 const INTRO_COMPLETE_EVENT = "dxf:intro-complete";
-const INTRO_EXIT_AT = 2400;
-const INTRO_EXIT_DURATION = 900;
+const INTRO_EXIT_AT = 2600;
+const INTRO_EXIT_DURATION = 600;
 
 const INTRO_LINE_1 = "DRIVE X";
 const INTRO_LINE_2 = "FRIENDS";
-const TITLE_START = 0.56;
+const TITLE_START = 0.7;
 
 export function ChapterPrologue() {
   const reduced = usePrefersReducedMotion();
@@ -170,63 +171,8 @@ export function ChapterPrologue() {
           </motion.div>
         </motion.div>
 
-        {/* Camera shake wrapper for intro-only */}
-        <motion.div
-          className="absolute inset-0 z-[3]"
-          animate={
-            intro && !isTouch && !reduced
-              ? { x: [0, -3, 2, -2, 1, 0], y: [0, 2, -2, 1, -1, 0] }
-              : { x: 0, y: 0 }
-          }
-          transition={{ duration: 0.55, delay: 1.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1] }}
-        >
-          {/* Radial burst — explosive starburst from center */}
-          <AnimatePresence>
-            {intro && !reduced ? (
-              <motion.div
-                key="burst"
-                aria-hidden
-                className="absolute inset-0 z-[1]"
-                exit={{ opacity: 0, transition: { duration: 0.6 } }}
-              >
-                <RadialBurst />
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-
-          {/* Speed streaks — horizontal motion lines */}
-          <AnimatePresence>
-            {intro && !reduced ? (
-              <motion.div
-                key="streaks"
-                aria-hidden
-                className="absolute inset-0 z-[2] overflow-hidden"
-                exit={{ opacity: 0, transition: { duration: 0.5 } }}
-              >
-                <SpeedStreaks />
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-
-          {/* White flash */}
-          <AnimatePresence>
-            {intro ? (
-              <motion.div
-                key="flash"
-                aria-hidden
-                className="absolute inset-0 bg-white"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isTouch ? [0, 0.22, 0] : [0, 0, 0.45, 0.1, 0] }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  duration: isTouch ? 0.62 : 1.3,
-                  times: isTouch ? [0, 0.45, 1] : [0, 0.7, 0.82, 0.9, 1],
-                  ease: "easeOut",
-                }}
-              />
-            ) : null}
-          </AnimatePresence>
-        </motion.div>
+        {/* Motion-design overture — headlights + tachymeter ignition */}
+        <IntroOverture active={intro} reduced={reduced} isTouch={isTouch} />
 
         {/* Veils — only after settle */}
         <motion.div
@@ -318,6 +264,10 @@ export function ChapterPrologue() {
               letterSpacing: "-0.025em",
               textTransform: "uppercase",
               maxWidth: "min(100%, 11ch)",
+              filter: intro && !reduced
+                ? "drop-shadow(0 0 18px rgba(255,250,235,0.35)) drop-shadow(0 0 36px rgba(122,167,255,0.28))"
+                : "none",
+              transition: "filter 700ms var(--ease-cinema)",
             }}
           >
             <span className="sr-only">{brand.name}</span>
@@ -543,90 +493,6 @@ function IntroTitleLine({
         {text}
       </motion.span>
     </span>
-  );
-}
-
-function RadialBurst() {
-  const lines = Array.from({ length: 16 }, (_, i) => i);
-  return (
-    <div className="absolute left-1/2 top-1/2 h-0 w-0">
-      {lines.map((i) => {
-        const angle = (i / 16) * 360;
-        return (
-          <motion.div
-            key={i}
-            className="absolute h-[1px]"
-            style={{
-              top: 0,
-              left: 0,
-              width: "85vmax",
-              transform: `rotate(${angle}deg)`,
-              transformOrigin: "left center",
-              background:
-                "linear-gradient(90deg, rgba(var(--rgb-fg),0.85) 0%, rgba(var(--rgb-fg),0.3) 22%, transparent 55%)",
-              filter: "blur(0.4px)",
-            }}
-            initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: [0, 1.05, 1, 1], opacity: [0, 0.85, 0.5, 0] }}
-            transition={{
-              duration: 1.95,
-              delay: i * 0.022,
-              times: [0, 0.35, 0.65, 1],
-              ease: [0.16, 1, 0.3, 1],
-            }}
-          />
-        );
-      })}
-      <motion.div
-        className="absolute h-[8px] w-[8px] -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{
-          background: "rgba(var(--rgb-fg),1)",
-          boxShadow: "0 0 28px 4px rgba(var(--rgb-fg),0.85)",
-        }}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: [0, 1.2, 1.6, 0], opacity: [0, 1, 1, 0] }}
-        transition={{ duration: 1.6, times: [0, 0.18, 0.45, 1], ease: "easeOut" }}
-      />
-    </div>
-  );
-}
-
-function SpeedStreaks() {
-  const streaks = [
-    { top: "30%", delay: 0.55, duration: 0.55 },
-    { top: "58%", delay: 0.7,  duration: 0.55 },
-    { top: "44%", delay: 0.85, duration: 0.5 },
-    { top: "72%", delay: 1.0,  duration: 0.5 },
-    { top: "24%", delay: 1.15, duration: 0.45 },
-    { top: "52%", delay: 1.3,  duration: 0.4 },
-    { top: "66%", delay: 1.45, duration: 0.35 },
-  ];
-  return (
-    <>
-      {streaks.map((s, i) => (
-        <motion.div
-          key={i}
-          className="absolute h-[1px]"
-          style={{
-            top: s.top,
-            left: "-30%",
-            right: "-30%",
-            background:
-              "linear-gradient(90deg, transparent 0%, rgba(var(--rgb-fg),0.95) 50%, transparent 100%)",
-            boxShadow: "0 0 22px rgba(var(--rgb-fg),0.7)",
-            filter: "blur(0.5px)",
-          }}
-          initial={{ x: "-110%", scaleX: 0.4 }}
-          animate={{ x: "110%", scaleX: [0.4, 1.7, 0.4] }}
-          transition={{
-            duration: s.duration,
-            delay: s.delay,
-            ease: [0.16, 1, 0.3, 1],
-            scaleX: { duration: s.duration, times: [0, 0.5, 1] },
-          }}
-        />
-      ))}
-    </>
   );
 }
 

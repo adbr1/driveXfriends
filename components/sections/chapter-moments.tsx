@@ -170,9 +170,13 @@ function MomentWindow({
   onNext: () => void;
   onPrev: () => void;
 }) {
+  const counter = `${String(index + 1).padStart(2, "0")} / ${String(gallery.length).padStart(2, "0")}`;
+  const navBtn =
+    "press inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(var(--rgb-fg),0.14)] bg-[rgba(var(--rgb-fg),0.04)] text-[16px] text-[var(--color-bone)] transition-colors hover:bg-[rgba(var(--rgb-fg),0.1)]";
+
   return (
     <motion.div
-      className="fixed inset-0 z-[90] overflow-y-auto bg-[rgba(var(--rgb-bg),0.78)] p-3 backdrop-blur-xl sm:p-5"
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-[rgba(var(--rgb-bg),0.78)] px-3 pb-3 pt-[6.5rem] backdrop-blur-xl sm:px-6 sm:pb-6 sm:pt-[7.5rem]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -180,79 +184,112 @@ function MomentWindow({
       role="dialog"
       aria-modal="true"
       aria-label={moment.label}
+      onClick={onClose}
     >
       <motion.div
-        className="mx-auto min-h-[calc(100svh-1.5rem)] max-w-[1440px] overflow-hidden rounded-[28px] border border-[rgba(var(--rgb-fg),0.14)] bg-[rgba(var(--rgb-bg),0.82)] shadow-[0_40px_140px_-60px_rgba(0,0,0,0.95)] sm:min-h-[calc(100svh-2.5rem)] sm:rounded-[36px]"
+        onClick={(e) => e.stopPropagation()}
+        className="flex w-full max-w-[1280px] max-h-[calc(100svh-8rem)] flex-col overflow-hidden rounded-[24px] border border-[rgba(var(--rgb-fg),0.14)] bg-[rgba(var(--rgb-bg),0.86)] shadow-[0_40px_140px_-60px_rgba(0,0,0,0.95)] sm:max-h-[calc(100svh-9.5rem)] sm:rounded-[32px]"
         initial={{ y: 34, scale: 0.985, opacity: 0 }}
         animate={{ y: 0, scale: 1, opacity: 1 }}
         exit={{ y: 18, scale: 0.99, opacity: 0 }}
         transition={{ duration: 0.58, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="flex h-14 items-center justify-between border-b border-[rgba(var(--rgb-fg),0.08)] px-4 sm:h-16 sm:px-6">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[var(--color-silver)]">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-            <span className="ml-2 hidden sm:inline">Moment {String(index + 1).padStart(2, "0")}</span>
+        {/* ── header ── */}
+        <div className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.6)] px-4 backdrop-blur-xl sm:h-16 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-[var(--color-silver-dim)]">
+            <span className="tabular text-[var(--color-bone)]">{counter}</span>
+            <span aria-hidden className="hidden text-[var(--color-silver-dim)] sm:inline">·</span>
+            <span className="hidden truncate sm:inline">{moment.location}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={onPrev} className="window-control" aria-label="Moment precedent">
+          <div className="flex shrink-0 items-center gap-2">
+            <button type="button" onClick={onPrev} className={navBtn} aria-label="Moment précédent">
               ←
             </button>
-            <button type="button" onClick={onNext} className="window-control" aria-label="Moment suivant">
+            <button type="button" onClick={onNext} className={navBtn} aria-label="Moment suivant">
               →
             </button>
-            <button type="button" onClick={onClose} className="window-control" aria-label="Fermer">
+            <span aria-hidden className="mx-1 h-5 w-px bg-[rgba(var(--rgb-fg),0.12)]" />
+            <button type="button" onClick={onClose} className={navBtn} aria-label="Fermer">
               ×
             </button>
           </div>
         </div>
 
-        <div className="grid gap-0 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="relative min-h-[48svh] overflow-hidden bg-[rgba(var(--rgb-fg),0.035)] lg:min-h-[calc(100svh-6.5rem)]">
-            <img src={moment.image.src} alt={moment.image.alt} className="absolute inset-0 h-full w-full object-cover" />
-            <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(var(--rgb-bg),0.08), rgba(var(--rgb-bg),0.45)), radial-gradient(ellipse at 70% 20%, rgba(122,167,255,0.18), transparent 50%)",
-              }}
-            />
-            <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8">
-              <h3 className="max-w-[9ch] text-5xl font-black uppercase leading-[0.84] text-[var(--color-bone)] sm:text-7xl">
-                {moment.label}
-              </h3>
+        {/* ── scrollable body ── */}
+        <div className="flex-1 overflow-y-auto overscroll-contain" data-lenis-prevent>
+          <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
+            {/* ── hero image ── */}
+            <div className="relative aspect-[4/5] overflow-hidden bg-[rgba(var(--rgb-fg),0.035)] lg:sticky lg:top-0 lg:aspect-auto lg:h-[calc(100svh-13.5rem)] lg:max-h-[calc(100svh-13.5rem)] lg:self-start">
+              <img
+                src={moment.image.src}
+                alt={moment.image.alt}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(var(--rgb-bg),0.08), rgba(var(--rgb-bg),0.55)), radial-gradient(ellipse at 70% 20%, rgba(122,167,255,0.18), transparent 50%)",
+                }}
+              />
+              <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                <h3 className="max-w-[10ch] text-5xl font-black uppercase leading-[0.84] text-[var(--color-bone)] sm:text-6xl lg:text-7xl">
+                  {moment.label}
+                </h3>
+              </div>
             </div>
-          </div>
 
-          <div className="flex flex-col gap-6 p-5 sm:p-8 lg:p-10">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--color-silver-dim)]">
-                {moment.date} - {moment.location}
-              </p>
-              <p className="mt-5 max-w-[44ch] text-lg leading-8 text-[var(--color-silver)]">
-                {moment.description}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2">
-              {moment.photos.map((photo, photoIndex) => (
-                <motion.figure
-                  key={photo}
-                  className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-fg),0.04)]"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.08 * photoIndex, duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <img
-                    src={photo}
-                    alt={`${moment.label} ${photoIndex + 1}`}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </motion.figure>
-              ))}
+            {/* ── right panel ── */}
+            <div className="flex flex-col gap-8 p-6 sm:p-9 lg:p-10">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--color-silver-dim)]">
+                  {moment.date} · {moment.location}
+                </p>
+                <p className="mt-5 max-w-[48ch] text-[16px] leading-[1.7] text-[var(--color-silver)] sm:text-[17px]">
+                  {moment.description}
+                </p>
+              </div>
+
+              {moment.photos.length > 0 ? (
+                <div>
+                  <p className="mb-3 text-[11px] uppercase tracking-[0.18em] text-[var(--color-silver-dim)]">
+                    Galerie · {moment.photos.length}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    {moment.photos.map((photo, photoIndex) => (
+                      <motion.figure
+                        key={photo}
+                        className="group relative aspect-[4/5] overflow-hidden rounded-2xl border border-[rgba(var(--rgb-fg),0.06)] bg-[rgba(var(--rgb-fg),0.04)]"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.06 * photoIndex, duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <img
+                          src={photo}
+                          alt={`${moment.label} ${photoIndex + 1}`}
+                          className="h-full w-full object-cover grayscale transition duration-700 group-hover:scale-[1.04] group-hover:grayscale-0"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </motion.figure>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* ── footer nav ── */}
+              <div className="mt-auto flex items-center justify-between border-t border-[rgba(var(--rgb-fg),0.08)] pt-5 text-[11px] uppercase tracking-[0.18em] text-[var(--color-silver-dim)]">
+                <span className="tabular text-[var(--color-bone)]">{counter}</span>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={onPrev} className={navBtn} aria-label="Moment précédent">
+                    ←
+                  </button>
+                  <button type="button" onClick={onNext} className={navBtn} aria-label="Moment suivant">
+                    →
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

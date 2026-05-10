@@ -10,7 +10,7 @@ export const brand = {
 
 export const chapters = [
   { id: "prologue", roman: "I", title: "Prologue", timecode: "00:00:14" },
-  { id: "territoire", roman: "II", title: "Territoire", timecode: "00:11:42" },
+  { id: "saison", roman: "II", title: "Saison", timecode: "00:11:42" },
   { id: "experiences", roman: "III", title: "Expériences", timecode: "00:27:08" },
   { id: "moments", roman: "IV", title: "Moments", timecode: "00:46:21" },
   { id: "invitation", roman: "V", title: "Invitation", timecode: "01:02:55" },
@@ -24,7 +24,7 @@ export const hero = {
   subtitle: "Le club automobile de référence au Luxembourg.",
   shortLine: "Routes d'exception. Voitures d'exception. Rencontres d'exception.",
   ctaPrimary: { label: "Rejoindre le club", href: "#invitation" },
-  ctaSecondary: { label: "Découvrir l'expérience", href: "#territoire" },
+  ctaSecondary: { label: "Découvrir l'expérience", href: "#saison" },
 };
 
 export const manifesto = {
@@ -48,7 +48,7 @@ export type EventDef = {
   description: string;
 };
 
-export const territoire = {
+export const saison = {
   eyebrow: "Saison 2026",
   title: "Le road book de la saison.",
   body:

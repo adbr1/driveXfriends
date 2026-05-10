@@ -2,13 +2,16 @@
 
 import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { territoire, type EventDef, type EventStatus } from "@/lib/content";
+import { saison, type EventDef, type EventStatus } from "@/lib/content";
 import { ChapterCard } from "@/components/primitives/chapter-card";
 import { RevealTitle, SectionSequence, SequenceItem } from "@/components/primitives/section-sequence";
 import { cn } from "@/lib/utils";
 
 /* ── colour per event slot ── */
 const EVENT_COLORS = ["#7aa7ff", "#a6ffcb", "#f4f1ea", "#b8c0cc"] as const;
+
+/* ── timeline rail position (single source of truth, prevents hydration drift) ── */
+const RAIL_LEFT = "left-[11px] sm:left-[13px] md:left-[15px]";
 
 /* ── status badge config ── */
 const STATUS_CONFIG: Record<EventStatus, { label: string; color: string; bg: string }> = {
@@ -62,37 +65,37 @@ function prepareSignupPayload(event: EventDef, form: HTMLFormElement): SignupPay
    ═══════════════════════════════════════════════ */
 
 export function ChapterTerritoire() {
-  const events = territoire.events as unknown as EventDef[];
+  const events = saison.events as unknown as EventDef[];
   const [drawerEvent, setDrawerEvent] = useState<EventDef | null>(null);
 
   return (
     <>
-      <section id="territoire" aria-labelledby="territoire-title" className="relative">
+      <section id="saison" aria-labelledby="saison-title" className="relative">
         <div className="mx-auto max-w-[1440px] px-[var(--gutter)] pt-[clamp(4rem,10vh,8rem)]">
           <SectionSequence>
             <SequenceItem>
-              <ChapterCard roman="II" title="Territoire" timecode="00:11:42" />
+              <ChapterCard roman="II" title="Saison" timecode="00:11:42" />
             </SequenceItem>
 
             <div className="mt-10 grid grid-cols-12 gap-x-6 gap-y-8 md:mt-16">
               {/* ─── Left: title + intro ─── */}
               <div className="col-span-12 lg:col-span-5">
                 <RevealTitle
-                  id="territoire-title"
+                  id="saison-title"
                   className="text-grad max-w-[14ch] font-sans font-medium leading-[0.96] sm:max-w-none"
                   style={{ fontSize: "clamp(2.15rem, 7vw, 4.2rem)" }}
                 >
-                  {territoire.title}
+                  {saison.title}
                 </RevealTitle>
                 <SequenceItem>
                   <p className="mt-5 max-w-[46ch] text-[15px] leading-[1.65] text-[var(--color-silver)] sm:mt-7 sm:text-[16px]">
-                    {territoire.body}
+                    {saison.body}
                   </p>
                 </SequenceItem>
                 <SequenceItem>
                   <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-[rgba(var(--rgb-fg),0.05)] px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[var(--color-silver)] backdrop-blur">
                     <span className="h-[5px] w-[5px] rounded-full bg-[var(--color-volt)]" />
-                    {territoire.eyebrow}
+                    {saison.eyebrow}
                   </div>
                 </SequenceItem>
               </div>
@@ -132,13 +135,13 @@ function Timeline({ events, onSignup }: { events: EventDef[]; onSignup: (e: Even
       {/* ── vertical rail ── */}
       <div
         aria-hidden
-        className="absolute left-[11px] top-0 bottom-0 w-[2px] sm:left-[19px] md:left-[27px]"
+        className={cn("absolute top-0 bottom-0 w-[2px]", RAIL_LEFT)}
         style={{ background: "rgba(var(--rgb-fg),0.07)" }}
       />
       {/* ── animated progress ── */}
       <motion.div
         aria-hidden
-        className="absolute left-[11px] top-0 w-[2px] sm:left-[19px] md:left-[27px]"
+        className={cn("absolute top-0 w-[2px]", RAIL_LEFT)}
         style={{
           height: lineHeight,
           background: "linear-gradient(180deg, #7aa7ff 0%, #a6ffcb 60%, rgba(var(--rgb-fg),0.12) 100%)",
@@ -351,115 +354,98 @@ function SignupDrawer({ event, onClose }: { event: EventDef | null; onClose: () 
           {/* ── backdrop ── */}
           <motion.div
             key="drawer-backdrop"
-            className="fixed inset-0 z-[90] bg-[rgba(0,0,0,0.6)] backdrop-blur-sm"
+            className="fixed inset-0 z-[90] bg-[rgba(0,0,0,0.65)] backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35 }}
-            onClick={onClose}
           />
 
-          {/* ── drawer panel ── */}
+          {/* ── modal panel (centered) ── */}
           <motion.div
             key="drawer-panel"
-            className="fixed inset-y-0 right-0 z-[91] w-full max-w-[540px] overflow-y-auto"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Inscription ${event.name}`}
+            className="fixed inset-0 z-[91] flex items-center justify-center px-3 pb-3 pt-[6.5rem] sm:px-6 sm:pb-6 sm:pt-[7.5rem]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={onClose}
           >
-            <div
-              className="relative min-h-full border-l border-[rgba(var(--rgb-fg),0.1)]"
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              className="relative flex w-full max-w-[640px] max-h-[calc(100svh-8rem)] flex-col overflow-hidden rounded-[24px] border border-[rgba(var(--rgb-fg),0.12)] shadow-[0_40px_140px_-60px_rgba(0,0,0,0.95)] sm:max-h-[calc(100svh-9.5rem)] sm:rounded-[32px]"
               style={{
                 background:
                   "linear-gradient(180deg, rgba(12,12,14,0.98) 0%, rgba(5,5,5,0.99) 100%)",
               }}
+              initial={{ y: 40, scale: 0.96, opacity: 0 }}
+              animate={{ y: 0, scale: 1, opacity: 1 }}
+              exit={{ y: 24, scale: 0.97, opacity: 0 }}
+              transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
             >
               {/* top glow */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 h-[200px]"
+                className="pointer-events-none absolute inset-x-0 top-0 h-[220px]"
                 style={{
-                  background: `radial-gradient(ellipse 80% 100% at 50% 0%, ${EVENT_COLORS[territoire.events.findIndex((e) => e.id === event.id) % EVENT_COLORS.length]}18, transparent 70%)`,
+                  background: `radial-gradient(ellipse 80% 100% at 50% 0%, ${EVENT_COLORS[saison.events.findIndex((e) => e.id === event.id) % EVENT_COLORS.length]}1f, transparent 70%)`,
                 }}
               />
 
-              <div className="relative z-[1] p-6 sm:p-8 md:p-10">
-                {/* close button */}
+              {/* sticky header */}
+              <div className="relative z-[2] flex h-16 shrink-0 items-center justify-between gap-4 border-b border-[rgba(var(--rgb-fg),0.08)] bg-[rgba(var(--rgb-bg),0.6)] px-5 backdrop-blur-xl sm:h-[68px] sm:px-7">
+                <h3 className="min-w-0 truncate text-[17px] font-medium leading-none text-[var(--color-bone)] sm:text-[18px]">
+                  {event.name}
+                </h3>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="window-control ml-auto flex"
+                  className="press flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[rgba(var(--rgb-fg),0.14)] bg-[rgba(var(--rgb-fg),0.04)] text-[18px] text-[var(--color-bone)] transition-colors hover:bg-[rgba(var(--rgb-fg),0.1)]"
                   aria-label="Fermer"
                 >
-                  ✕
+                  ×
                 </button>
+              </div>
 
-                {/* event info header */}
-                <div className="mt-8">
-                  <span
-                    className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-[0.14em]"
-                    style={{ background: statusCfg.bg, color: statusCfg.color }}
-                  >
-                    {event.status === "open" && (
-                      <span className="led-live inline-block h-[5px] w-[5px] rounded-full bg-[var(--color-signal)]" />
-                    )}
-                    {statusCfg.label}
-                  </span>
-                  <h3 className="mt-4 text-3xl font-medium leading-[0.95] text-[var(--color-bone)] sm:text-4xl">
-                    {event.name}
-                  </h3>
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-[var(--color-silver-dim)]">
-                    <span>{event.date}</span>
-                    <span>{event.location}</span>
-                    <span className="tabular">{event.distance}</span>
-                  </div>
-                  <p className="mt-4 max-w-[42ch] text-[14px] leading-[1.65] text-[var(--color-silver)]">
-                    {event.description}
-                  </p>
-                </div>
-
-                {/* divider */}
-                <div className="hairline my-8" />
-
-                {/* form or success */}
-                <AnimatePresence mode="wait">
-                  {submitted ? (
-                    <motion.div
-                      key="success"
-                      className="flex flex-col items-center gap-4 py-12 text-center"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              {/* scrollable body */}
+              <div className="relative z-[1] flex-1 overflow-y-auto overscroll-contain" data-lenis-prevent>
+                <div className="px-6 pt-7 pb-[calc(env(safe-area-inset-bottom)+1.75rem)] sm:px-8 sm:pt-8 sm:pb-8 md:px-10 md:pb-10">
+                  {/* event info */}
+                  <div>
+                    <span
+                      className="inline-flex items-center gap-2 rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em]"
+                      style={{ background: statusCfg.bg, color: statusCfg.color }}
                     >
-                      <motion.div
-                        className="flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(52,211,153,0.12)]"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.15, duration: 0.5, type: "spring", stiffness: 200, damping: 12 }}
-                      >
-                        <span className="text-2xl text-[var(--color-signal)]">✓</span>
-                      </motion.div>
-                      <h4 className="text-xl font-medium text-[var(--color-bone)]">
-                        Demande envoyée
-                      </h4>
-                      <p className="max-w-[32ch] text-[14px] leading-[1.6] text-[var(--color-silver)]">
-                        Votre inscription a été préparée. Nous reviendrons vers vous rapidement.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={onClose}
-                        className="press mt-4 rounded-full border border-[rgba(var(--rgb-fg),0.12)] bg-[rgba(var(--rgb-fg),0.04)] px-6 py-2.5 text-[13px] font-medium text-[var(--color-bone)] transition-colors hover:bg-[rgba(var(--rgb-fg),0.08)]"
-                      >
-                        Fermer
-                      </button>
-                    </motion.div>
-                  ) : (
+                      {event.status === "open" && (
+                        <span className="led-live inline-block h-[5px] w-[5px] rounded-full bg-[var(--color-signal)]" />
+                      )}
+                      {statusCfg.label}
+                    </span>
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-[var(--color-silver-dim)]">
+                      <span>{event.date}</span>
+                      <span>{event.location}</span>
+                      <span className="tabular">{event.distance}</span>
+                    </div>
+                    <p className="mt-3 max-w-[52ch] text-[14px] leading-[1.65] text-[var(--color-silver)]">
+                      {event.description}
+                    </p>
+                  </div>
+
+                  {/* divider */}
+                  <div className="hairline my-7" />
+
+                  {/* form or success */}
+                  <AnimatePresence mode="wait">
+                    {submitted ? (
+                      <SuccessSplash key="success" onClose={onClose} />
+                    ) : (
                     <motion.form
                       key="form"
                       onSubmit={onSubmit}
-                      className="space-y-6"
+                      className="space-y-8"
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
@@ -470,7 +456,7 @@ function SignupDrawer({ event, onClose }: { event: EventDef | null; onClose: () 
                         <legend className="mb-4 text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--color-silver)]">
                           Vous
                         </legend>
-                        <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="grid gap-4 sm:grid-cols-2">
                           <DrawerField name="name" label="Nom" placeholder="Alexandre Dupont" required />
                           <DrawerField name="email" label="Email" type="email" placeholder="alex@exemple.com" required />
                           <DrawerField name="phone" label="Téléphone" placeholder="+352 ..." />
@@ -500,12 +486,13 @@ function SignupDrawer({ event, onClose }: { event: EventDef | null; onClose: () 
                           <span className="sr-only">Message</span>
                           <textarea
                             name="message"
-                            rows={4}
+                            style={{ caretColor: "var(--color-volt)", colorScheme: "dark" }}
                             className={cn(
-                              "w-full resize-none rounded-2xl border px-4 py-3 text-[14px] leading-[1.6] text-[var(--color-bone)] outline-none transition-all duration-300",
-                              "border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-fg),0.04)]",
-                              "placeholder:text-[var(--color-silver-dim)]",
-                              "focus:border-[rgba(122,167,255,0.5)] focus:bg-[rgba(var(--rgb-fg),0.06)] focus:shadow-[0_0_0_3px_rgba(122,167,255,0.1)]",
+                              "min-h-[120px] w-full resize-y rounded-2xl border px-4 py-3 text-[15px] leading-[1.65] text-[var(--color-bone)] outline-none transition-all duration-200",
+                              "border-[rgba(var(--rgb-fg),0.14)] bg-[rgba(255,255,255,0.025)] backdrop-blur-sm",
+                              "placeholder:text-[rgba(var(--rgb-fg),0.32)]",
+                              "hover:border-[rgba(var(--rgb-fg),0.22)]",
+                              "focus:border-[rgba(122,167,255,0.7)] focus:bg-[rgba(255,255,255,0.045)] focus:shadow-[0_0_0_4px_rgba(122,167,255,0.14)]",
                             )}
                             placeholder="Disponibilité, passager, détails utiles..."
                           />
@@ -521,14 +508,146 @@ function SignupDrawer({ event, onClose }: { event: EventDef | null; onClose: () 
                         <span aria-hidden>→</span>
                       </button>
                     </motion.form>
-                  )}
-                </AnimatePresence>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         </>
       ) : null}
     </AnimatePresence>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   SUCCESS SPLASH (wow animation)
+   ═══════════════════════════════════════════════ */
+
+const PARTICLE_COUNT = 18;
+const PARTICLES = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
+  const angle = (i / PARTICLE_COUNT) * Math.PI * 2;
+  const distance = 90 + Math.random() * 60;
+  return {
+    id: i,
+    x: Math.cos(angle) * distance,
+    y: Math.sin(angle) * distance,
+    color: i % 3 === 0 ? "#a6ffcb" : i % 3 === 1 ? "#7aa7ff" : "#f4f1ea",
+    size: 4 + Math.random() * 4,
+    delay: 0.18 + Math.random() * 0.12,
+  };
+});
+
+function SuccessSplash({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      aria-live="polite"
+      className="relative flex flex-col items-center gap-5 py-10 text-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* particle burst */}
+      <div aria-hidden className="pointer-events-none absolute left-1/2 top-[58px] h-0 w-0">
+        {PARTICLES.map((p) => (
+          <motion.span
+            key={p.id}
+            className="absolute rounded-full"
+            style={{
+              left: 0,
+              top: 0,
+              width: p.size,
+              height: p.size,
+              background: p.color,
+              boxShadow: `0 0 12px ${p.color}`,
+            }}
+            initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
+            animate={{
+              x: p.x,
+              y: p.y,
+              opacity: [0, 1, 1, 0],
+              scale: [0, 1, 1, 0.4],
+            }}
+            transition={{
+              delay: p.delay,
+              duration: 1.1,
+              ease: [0.16, 1, 0.3, 1],
+              times: [0, 0.2, 0.7, 1],
+            }}
+          />
+        ))}
+      </div>
+
+      {/* concentric rings */}
+      <div aria-hidden className="pointer-events-none absolute left-1/2 top-[58px] h-0 w-0">
+        {[0, 0.12, 0.24].map((delay, i) => (
+          <motion.span
+            key={i}
+            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border"
+            style={{ borderColor: "rgba(166,255,203,0.4)" }}
+            initial={{ width: 60, height: 60, opacity: 0.6 }}
+            animate={{ width: 220, height: 220, opacity: 0 }}
+            transition={{ delay, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+          />
+        ))}
+      </div>
+
+      {/* check medallion */}
+      <motion.div
+        className="relative flex h-[88px] w-[88px] items-center justify-center rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 35%, rgba(166,255,203,0.22), rgba(166,255,203,0.05) 70%)",
+          boxShadow:
+            "0 0 0 1px rgba(166,255,203,0.35), 0 20px 60px -10px rgba(166,255,203,0.35)",
+        }}
+        initial={{ scale: 0, rotate: -20 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 240, damping: 14, delay: 0.05 }}
+      >
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden>
+          <motion.path
+            d="M10 20.5 L17.5 28 L31 13"
+            stroke="#a6ffcb"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ delay: 0.32, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            style={{ filter: "drop-shadow(0 0 6px rgba(166,255,203,0.6))" }}
+          />
+        </svg>
+      </motion.div>
+
+      <motion.h4
+        className="text-2xl font-medium text-[var(--color-bone)] sm:text-3xl"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.55, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+      >
+        Demande envoyée
+      </motion.h4>
+      <motion.p
+        className="max-w-[34ch] text-[14px] leading-[1.6] text-[var(--color-silver)]"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+      >
+        Votre inscription a été préparée. Nous reviendrons vers vous très rapidement.
+      </motion.p>
+      <motion.button
+        type="button"
+        onClick={onClose}
+        className="press mt-3 rounded-full border border-[rgba(var(--rgb-fg),0.12)] bg-[rgba(var(--rgb-fg),0.04)] px-6 py-2.5 text-[13px] font-medium text-[var(--color-bone)] transition-colors hover:bg-[rgba(var(--rgb-fg),0.08)]"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.85, duration: 0.5 }}
+      >
+        Fermer
+      </motion.button>
+    </motion.div>
   );
 }
 
@@ -551,20 +670,27 @@ function DrawerField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-[11px] uppercase tracking-[0.14em] text-[var(--color-silver-dim)]">
-        {label}
-        {required && <span className="ml-1 text-[var(--color-volt)]">*</span>}
+      <span className="mb-2 flex items-baseline justify-between gap-2 text-[12px] font-medium tracking-[0.02em] text-[var(--color-silver)]">
+        <span>{label}</span>
+        {!required && (
+          <span className="text-[10px] uppercase tracking-[0.16em] text-[var(--color-silver-dim)]">
+            Optionnel
+          </span>
+        )}
       </span>
       <input
         name={name}
         type={type}
         required={required}
         placeholder={placeholder}
+        autoComplete="off"
+        style={{ caretColor: "var(--color-volt)", colorScheme: "dark" }}
         className={cn(
-          "h-12 w-full rounded-2xl border px-4 text-[14px] text-[var(--color-bone)] outline-none transition-all duration-300",
-          "border-[rgba(var(--rgb-fg),0.1)] bg-[rgba(var(--rgb-fg),0.04)]",
-          "placeholder:text-[var(--color-silver-dim)]",
-          "focus:border-[rgba(122,167,255,0.5)] focus:bg-[rgba(var(--rgb-fg),0.06)] focus:shadow-[0_0_0_3px_rgba(122,167,255,0.1)]",
+          "h-[52px] w-full rounded-2xl border px-4 text-[15px] text-[var(--color-bone)] outline-none transition-all duration-200",
+          "border-[rgba(var(--rgb-fg),0.14)] bg-[rgba(255,255,255,0.025)] backdrop-blur-sm",
+          "placeholder:text-[rgba(var(--rgb-fg),0.32)]",
+          "hover:border-[rgba(var(--rgb-fg),0.22)]",
+          "focus:border-[rgba(122,167,255,0.7)] focus:bg-[rgba(255,255,255,0.045)] focus:shadow-[0_0_0_4px_rgba(122,167,255,0.14)]",
         )}
       />
     </label>
